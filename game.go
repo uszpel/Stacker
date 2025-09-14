@@ -106,7 +106,13 @@ func (g *Game) checkBoard(block *Block, dX, dY int) bool {
 	gridY += dY
 	for iy, y := range block.Shape {
 		for ix := range y {
-			if block.Shape[iy][ix] > 0 && len(g.Board) > gridY+iy && len(g.Board[0]) > gridX+ix &&
+			if gridX < 0 || len(g.Board[0]) <= gridX+ix+1 {
+				result = false
+				break
+			} else if len(g.Board) <= gridY+iy {
+				block.Moving = false
+				break
+			} else if block.Shape[iy][ix] > 0 && len(g.Board) > gridY+iy && len(g.Board[0]) > gridX+ix &&
 				g.Board[gridY+iy][gridX+ix] > 0 {
 				log.Printf("Current grid check %v: %v", block.Id, g.Board[gridY+iy][gridX+ix])
 				if g.Board[gridY+iy][gridX+ix] != block.Id {

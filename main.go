@@ -18,7 +18,7 @@ func main() {
 	g.Blocks = make([]*Block, 0)
 	g.initBoard()
 	ebiten.SetWindowSize(myScreenWidth, myScreenHeight)
-	ebiten.SetWindowTitle("Tetris")
+	ebiten.SetWindowTitle("Stacker")
 
 	//g.printBoard()
 	err := ebiten.RunGame(g)

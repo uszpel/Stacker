@@ -32,22 +32,9 @@ func (b *Block) Move(dX, dY float64) {
 	if b.Moving {
 		sizeX := float64(b.Sprite.Bounds().Dx())
 		sizeY := float64(b.Sprite.Bounds().Dy())
-		maxNumY := len(b.Shape)
-		maxNumX := len(b.Shape[0])
 
-		x := b.Position.X + dX*sizeX + sizeX*float64(maxNumX)
-		if x < b.Screen.X && x > sizeX*float64(maxNumX) {
-			b.Position.X = b.Position.X + dX*sizeX
-			//log.Printf("New position x=%v, %v", b.Position.X, sizeX)
-		}
-
-		y := b.Position.Y + dY*sizeY*float64(maxNumY)
-		if y < b.Screen.Y-sizeY && y > 0 {
-			b.Position.Y = b.Position.Y + dY*sizeY
-			//log.Printf("New position y=%v, %v, %v, %v", b.Position.Y, sizeY, y, maxNumY)
-		} else if y >= b.Screen.Y-sizeY {
-			b.Moving = false
-		}
+		b.Position.X = b.Position.X + dX*sizeX
+		b.Position.Y = b.Position.Y + dY*sizeY
 	}
 }
 
