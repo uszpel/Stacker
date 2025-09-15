@@ -9,8 +9,8 @@ import (
 var idCounter = 0
 
 type Vector struct {
-	X float64
-	Y float64
+	X int
+	Y int
 }
 
 type Block struct {
@@ -23,37 +23,29 @@ type Block struct {
 }
 
 func (b *Block) getGridPosition() (int, int) {
-	sizeX := float64(b.Sprite.Bounds().Dx())
-	sizeY := float64(b.Sprite.Bounds().Dy())
-	return int(b.Position.X / sizeX), int(b.Position.Y / sizeY)
+	return b.Position.X / b.Sprite.Bounds().Dx(), b.Position.Y / b.Sprite.Bounds().Dy()
 }
 
-func (b *Block) Move(dX, dY float64) {
+func (b *Block) Move(dX, dY int) {
 	if b.Moving {
-		sizeX := float64(b.Sprite.Bounds().Dx())
-		sizeY := float64(b.Sprite.Bounds().Dy())
-
-		b.Position.X = b.Position.X + dX*sizeX
-		b.Position.Y = b.Position.Y + dY*sizeY
+		b.Position.X = b.Position.X + dX*b.Sprite.Bounds().Dx()
+		b.Position.Y = b.Position.Y + dY*b.Sprite.Bounds().Dy()
 	}
 }
 
 func (b *Block) Draw(screen *ebiten.Image) {
-	sizeX := float64(b.Sprite.Bounds().Dx())
-	sizeY := float64(b.Sprite.Bounds().Dy())
-
 	for iy, y := range b.Shape {
 		for ix := range y {
 			if b.Shape[iy][ix] > 0 {
 				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(b.Position.X+float64(ix)*sizeX, b.Position.Y+float64(iy)*sizeY)
+				op.GeoM.Translate(float64(b.Position.X+ix*b.Sprite.Bounds().Dx()), float64(b.Position.Y+iy*b.Sprite.Bounds().Dy()))
 				screen.DrawImage(&b.Sprite, op)
 			}
 		}
 	}
 }
 
-func NewBlock(img ebiten.Image, screenWidth float64, screenHeight float64) *Block {
+func NewBlock(img ebiten.Image, screenWidth int, screenHeight int) *Block {
 	block := &Block{}
 	block.Id = newId()
 	block.Sprite = img

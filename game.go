@@ -44,7 +44,7 @@ func (g *Game) Update() error {
 				step = -1
 			}
 			if g.checkBoard(block, step, 0) {
-				block.Move(float64(step), 0)
+				block.Move(step, 0)
 			}
 			g.Direction = dirNone
 		}
