@@ -16,14 +16,14 @@ type Game struct {
 	CicleCounter int
 	Direction    int
 	Blocks       []*Block
+	Generator    BlockGenerator
 	Board        [][]int
-	Sprites      []ebiten.Image
 }
 
 func (g *Game) Update() error {
 	block := g.getMovingBlock()
 	if block == nil {
-		block = NewBlock(g.Sprites[0], myScreenWidth, myScreenHeight)
+		block = g.Generator.NewBlock()
 		g.Blocks = append(g.Blocks, block)
 
 		log.Printf("New block: %v\n", block.Id)
@@ -74,11 +74,12 @@ func (g *Game) getMovingBlock() *Block {
 }
 
 func (g *Game) initBoard() {
-	g.Sprites = make([]ebiten.Image, 0)
-	g.Sprites = append(g.Sprites, g.mustLoadImage("assets/blue_square.png"))
+	g.Generator.Init()
+	g.Generator.Sprites = make([]ebiten.Image, 0)
+	g.Generator.Sprites = append(g.Generator.Sprites, g.mustLoadImage("assets/blue_square.png"))
 
-	sizeX := myScreenWidth / g.Sprites[0].Bounds().Dx()
-	sizeY := myScreenHeight / g.Sprites[0].Bounds().Dy()
+	sizeX := myScreenWidth / g.Generator.Sprites[0].Bounds().Dx()
+	sizeY := myScreenHeight / g.Generator.Sprites[0].Bounds().Dy()
 	g.Board = make([][]int, sizeY)
 	for i := 0; i < sizeY; i++ {
 		g.Board[i] = make([]int, sizeX)

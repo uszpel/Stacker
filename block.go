@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "image/png"
+	"math/rand/v2"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -18,7 +19,6 @@ type Block struct {
 	Shape    [][]int
 	Sprite   ebiten.Image
 	Position Vector
-	Screen   Vector
 	Moving   bool
 }
 
@@ -45,27 +45,42 @@ func (b *Block) Draw(screen *ebiten.Image) {
 	}
 }
 
-func NewBlock(img ebiten.Image, screenWidth int, screenHeight int) *Block {
+type BlockGenerator struct {
+	Sprites []ebiten.Image
+	Shapes  [][][]int
+}
+
+func (b *BlockGenerator) Init() {
+	b.Shapes = make([][][]int, 0)
+	b.Shapes = append(b.Shapes, [][]int{
+		{1, 1, 1},
+		{1, 0, 0},
+	})
+	b.Shapes = append(b.Shapes, [][]int{
+		{1, 1},
+		{1, 1},
+	})
+	b.Shapes = append(b.Shapes, [][]int{
+		{1, 1, 1},
+	})
+}
+
+func (b BlockGenerator) NewBlock() *Block {
 	block := &Block{}
-	block.Id = newId()
-	block.Sprite = img
+	block.Id = b.newId()
+	block.Sprite = b.Sprites[0]
 	block.Position.X = 240
 	block.Position.Y = 54
-	block.Screen.X = screenWidth
-	block.Screen.Y = screenHeight
-	block.Shape = generateBlock()
+	block.Shape = b.generateBlock()
 	block.Moving = true
 	return block
 }
 
-func newId() int {
+func (b BlockGenerator) newId() int {
 	idCounter++
 	return idCounter
 }
 
-func generateBlock() [][]int {
-	return [][]int{
-		{1, 1, 1},
-		{1, 0, 0},
-	}
+func (b BlockGenerator) generateBlock() [][]int {
+	return b.Shapes[rand.IntN(3)]
 }
