@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"image"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -75,8 +74,6 @@ func (g *Game) getMovingBlock() *Block {
 
 func (g *Game) initBoard() {
 	g.Generator.Init()
-	g.Generator.Sprites = make([]ebiten.Image, 0)
-	g.Generator.Sprites = append(g.Generator.Sprites, g.mustLoadImage("assets/blue_square.png"))
 
 	sizeX := myScreenWidth / g.Generator.Sprites[0].Bounds().Dx()
 	sizeY := myScreenHeight / g.Generator.Sprites[0].Bounds().Dy()
@@ -135,21 +132,6 @@ func (g *Game) printBoard() {
 		}
 		fmt.Println(rowString)
 	}
-}
-
-func (g *Game) mustLoadImage(name string) ebiten.Image {
-	f, err := assets.Open(name)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-
-	img, _, err := image.Decode(f)
-	if err != nil {
-		panic(err)
-	}
-
-	return *ebiten.NewImageFromImage(img)
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {

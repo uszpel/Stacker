@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image"
 	_ "image/png"
 	"math/rand/v2"
 
@@ -63,6 +64,9 @@ func (b *BlockGenerator) Init() {
 	b.Shapes = append(b.Shapes, [][]int{
 		{1, 1, 1},
 	})
+
+	b.Sprites = make([]ebiten.Image, 0)
+	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/blue_square.png"))
 }
 
 func (b BlockGenerator) NewBlock() *Block {
@@ -83,4 +87,19 @@ func (b BlockGenerator) newId() int {
 
 func (b BlockGenerator) generateBlock() [][]int {
 	return b.Shapes[rand.IntN(3)]
+}
+
+func (b *BlockGenerator) mustLoadImage(name string) ebiten.Image {
+	f, err := assets.Open(name)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	img, _, err := image.Decode(f)
+	if err != nil {
+		panic(err)
+	}
+
+	return *ebiten.NewImageFromImage(img)
 }
