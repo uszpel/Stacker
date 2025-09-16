@@ -20,7 +20,6 @@ func main() {
 	ebiten.SetWindowSize(myScreenWidth, myScreenHeight)
 	ebiten.SetWindowTitle("Stacker")
 
-	//g.printBoard()
 	err := ebiten.RunGame(g)
 	if err != nil {
 		panic(err)
