@@ -34,6 +34,22 @@ func (b *Block) Move(dX, dY int) {
 	}
 }
 
+func (b *Block) Rotate() {
+	if b.Moving {
+		newShape := make([][]int, len(b.Shape[0]))
+		for i := range newShape {
+			newShape[i] = make([]int, len(b.Shape))
+		}
+
+		for iy, y := range b.Shape {
+			for ix := range y {
+				newShape[ix][iy] = b.Shape[iy][ix]
+			}
+		}
+		b.Shape = newShape
+	}
+}
+
 func (b *Block) Draw(screen *ebiten.Image) {
 	for iy, y := range b.Shape {
 		for ix := range y {

@@ -10,6 +10,7 @@ import (
 const dirNone = 0
 const dirLeft = 1
 const dirRight = 2
+const dirUp = 3
 
 type Game struct {
 	CicleCounter int
@@ -29,26 +30,27 @@ func (g *Game) Update() error {
 		g.printBoard()
 	}
 
-	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-		g.Direction = dirLeft
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyRight) {
-		g.Direction = dirRight
-	}
+	g.Direction = g.getDirection(g.Direction)
 	if g.CicleCounter%20 == 0 {
 		g.updateBoard(block, 0)
-		if g.Direction != dirNone {
+		if g.Direction != dirNone && g.Direction != dirUp {
 			step := 1
 			if g.Direction == dirLeft {
 				step = -1
 			}
-			if g.checkBoard(block, step, 0) {
+			if g.checkBoard(*block, step, 0, false) {
 				block.Move(step, 0)
 			}
 			g.Direction = dirNone
 		}
 		if g.CicleCounter >= 60 {
-			if g.checkBoard(block, 0, 1) {
+			if g.Direction == dirUp {
+				if g.checkBoard(*block, 0, 0, true) {
+					block.Rotate()
+				}
+				g.Direction = dirNone
+			}
+			if g.checkBoard(*block, 0, 1, false) {
 				block.Move(0, 1)
 			} else {
 				block.Moving = false
@@ -59,6 +61,20 @@ func (g *Game) Update() error {
 	}
 	g.CicleCounter++
 	return nil
+}
+
+func (g *Game) getDirection(curDirection int) int {
+	result := curDirection
+	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
+		result = dirLeft
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyRight) {
+		result = dirRight
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyUp) {
+		result = dirUp
+	}
+	return result
 }
 
 func (g *Game) getMovingBlock() *Block {
@@ -97,11 +113,15 @@ func (g *Game) updateBoard(block *Block, value int) {
 	}
 }
 
-func (g *Game) checkBoard(block *Block, dX, dY int) bool {
+func (g *Game) checkBoard(block Block, dX int, dY int, rotate bool) bool {
 	result := true
 	gridX, gridY := block.getGridPosition()
-	gridX += dX
-	gridY += dY
+	if rotate {
+		block.Rotate()
+	} else {
+		gridX += dX
+		gridY += dY
+	}
 	for iy, y := range block.Shape {
 		for ix := range y {
 			if gridX < 0 || len(g.Board[0]) <= gridX+ix+1 {
@@ -109,6 +129,7 @@ func (g *Game) checkBoard(block *Block, dX, dY int) bool {
 				break
 			} else if len(g.Board) <= gridY+iy {
 				block.Moving = false
+				result = false
 				break
 			} else if block.Shape[iy][ix] > 0 && len(g.Board) > gridY+iy && len(g.Board[0]) > gridX+ix &&
 				g.Board[gridY+iy][gridX+ix] > 0 {
@@ -120,7 +141,6 @@ func (g *Game) checkBoard(block *Block, dX, dY int) bool {
 			}
 		}
 	}
-
 	return result
 }
 
