@@ -43,7 +43,7 @@ func (b *Block) Rotate() {
 
 		for iy, y := range b.Shape {
 			for ix := range y {
-				newShape[ix][iy] = b.Shape[iy][ix]
+				newShape[ix][iy] = b.Shape[iy][len(y)-1-ix]
 			}
 		}
 		b.Shape = newShape
@@ -88,7 +88,7 @@ func (b *BlockGenerator) Init() {
 }
 
 func (b BlockGenerator) NewBlock() *Block {
-	curColor := rand.IntN(3)
+	curColor := rand.IntN(1000) % 3
 	block := &Block{}
 	block.Id = b.newId()
 	block.Sprite = b.Sprites[curColor]
