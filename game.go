@@ -27,7 +27,7 @@ func (g *Game) Update() error {
 		g.Blocks = append(g.Blocks, block)
 
 		log.Printf("New block: %v\n", block.Id)
-		g.printBoard()
+		//g.printBoard()
 	}
 
 	g.Direction = g.getDirection(g.Direction)
@@ -102,7 +102,7 @@ func (g *Game) initBoard() {
 func (g *Game) updateBoard(block *Block, value int) {
 	gridX, gridY := block.getGridPosition()
 	if value > 0 {
-		log.Printf("Current grid position %v: (%v,%v)", block.Id, gridX, gridY)
+		//log.Printf("Current grid position %v: (%v,%v)", block.Id, gridX, gridY)
 	}
 	for iy, y := range block.Shape {
 		for ix := range y {

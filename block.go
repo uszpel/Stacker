@@ -78,17 +78,22 @@ func (b *BlockGenerator) Init() {
 		{1, 1},
 	})
 	b.Shapes = append(b.Shapes, [][]int{
-		{1, 1, 1},
+		{1, 1, 1, 1},
+	})
+	b.Shapes = append(b.Shapes, [][]int{
+		{1, 1, 0},
+		{0, 1, 1},
 	})
 
 	b.Sprites = make([]ebiten.Image, 0)
 	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/blue_square.png"))
 	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/green_square.png"))
 	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/red_square.png"))
+	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/yellow_square.png"))
 }
 
 func (b BlockGenerator) NewBlock() *Block {
-	curColor := rand.IntN(1000) % 3
+	curColor := rand.IntN(1000) % len(b.Sprites)
 	block := &Block{}
 	block.Id = b.newId()
 	block.Sprite = b.Sprites[curColor]
