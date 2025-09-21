@@ -33,12 +33,10 @@ func (g *Game) Update() error {
 
 	g.Direction = g.getDirection(g.Direction)
 	if g.CicleCounter%20 == 0 {
-		g.updateBoard(block, 0)
 		g.moveSideways(block)
 		if g.CicleCounter >= 60 {
 			g.moveDown(block)
 			g.CicleCounter = 0
-			g.updateBoard(block, block.Id)
 		}
 	}
 	g.CicleCounter++
@@ -48,16 +46,20 @@ func (g *Game) Update() error {
 func (g *Game) moveDown(block *Block) {
 	if g.Direction == dirUp {
 		if g.checkBoard(*block, 0, 0, true) {
+			g.updateBoard(block, 0)
 			block.Rotate()
+			g.updateBoard(block, block.Id)
 		}
 		g.Direction = dirNone
 	}
 	if g.checkBoard(*block, 0, 1, false) {
+		g.updateBoard(block, 0)
 		if g.Direction == dirDown && g.checkBoard(*block, 0, 3, false) {
 			block.Move(0, 3)
 		} else {
 			block.Move(0, 1)
 		}
+		g.updateBoard(block, block.Id)
 	} else {
 		block.Moving = false
 	}
@@ -70,7 +72,9 @@ func (g *Game) moveSideways(block *Block) {
 			step = -1
 		}
 		if g.checkBoard(*block, step, 0, false) {
+			g.updateBoard(block, 0)
 			block.Move(step, 0)
+			g.updateBoard(block, block.Id)
 		}
 		g.Direction = dirNone
 	}
@@ -97,6 +101,17 @@ func (g *Game) getMovingBlock() *Block {
 	var block *Block = nil
 	for _, b := range g.Blocks {
 		if b.Moving {
+			block = b
+			break
+		}
+	}
+	return block
+}
+
+func (g *Game) getBlock(id int) *Block {
+	var block *Block = nil
+	for _, b := range g.Blocks {
+		if b.Id == id {
 			block = b
 			break
 		}
@@ -172,9 +187,20 @@ func (g *Game) printBoard() {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	//TODO: use Board instead of Blocks for drawing
-	for _, b := range g.Blocks {
-		b.Draw(screen)
+	for ix, b := range g.Board {
+		for iy, e := range b {
+			if e != 0 {
+				block := g.getBlock(e)
+				op := &ebiten.DrawImageOptions{}
+				op.GeoM.Translate(float64(iy*block.Sprite.Bounds().Dy()), float64(ix*block.Sprite.Bounds().Dx()))
+				screen.DrawImage(&block.Sprite, op)
+			}
+		}
 	}
+
+	/*for _, b := range g.Blocks {
+		b.Draw(screen)
+	}*/
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
