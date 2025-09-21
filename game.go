@@ -11,6 +11,7 @@ const dirNone = 0
 const dirLeft = 1
 const dirRight = 2
 const dirUp = 3
+const dirDown = 4
 
 type Game struct {
 	CicleCounter int
@@ -33,34 +34,46 @@ func (g *Game) Update() error {
 	g.Direction = g.getDirection(g.Direction)
 	if g.CicleCounter%20 == 0 {
 		g.updateBoard(block, 0)
-		if g.Direction != dirNone && g.Direction != dirUp {
-			step := 1
-			if g.Direction == dirLeft {
-				step = -1
-			}
-			if g.checkBoard(*block, step, 0, false) {
-				block.Move(step, 0)
-			}
-			g.Direction = dirNone
-		}
+		g.moveSideways(block)
 		if g.CicleCounter >= 60 {
-			if g.Direction == dirUp {
-				if g.checkBoard(*block, 0, 0, true) {
-					block.Rotate()
-				}
-				g.Direction = dirNone
-			}
-			if g.checkBoard(*block, 0, 1, false) {
-				block.Move(0, 1)
-			} else {
-				block.Moving = false
-			}
+			g.moveDown(block)
 			g.CicleCounter = 0
 			g.updateBoard(block, block.Id)
 		}
 	}
 	g.CicleCounter++
 	return nil
+}
+
+func (g *Game) moveDown(block *Block) {
+	if g.Direction == dirUp {
+		if g.checkBoard(*block, 0, 0, true) {
+			block.Rotate()
+		}
+		g.Direction = dirNone
+	}
+	if g.checkBoard(*block, 0, 1, false) {
+		if g.Direction == dirDown && g.checkBoard(*block, 0, 3, false) {
+			block.Move(0, 3)
+		} else {
+			block.Move(0, 1)
+		}
+	} else {
+		block.Moving = false
+	}
+}
+
+func (g *Game) moveSideways(block *Block) {
+	if g.Direction == dirLeft || g.Direction == dirRight {
+		step := 1
+		if g.Direction == dirLeft {
+			step = -1
+		}
+		if g.checkBoard(*block, step, 0, false) {
+			block.Move(step, 0)
+		}
+		g.Direction = dirNone
+	}
 }
 
 func (g *Game) getDirection(curDirection int) int {
@@ -73,6 +86,9 @@ func (g *Game) getDirection(curDirection int) int {
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyUp) {
 		result = dirUp
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyDown) {
+		result = dirDown
 	}
 	return result
 }
@@ -155,6 +171,7 @@ func (g *Game) printBoard() {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	//TODO: use Board instead of Blocks for drawing
 	for _, b := range g.Blocks {
 		b.Draw(screen)
 	}

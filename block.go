@@ -99,7 +99,7 @@ func (b BlockGenerator) NewBlock() *Block {
 	block.Sprite = b.Sprites[curColor]
 	block.Position.X = 240
 	block.Position.Y = 54
-	block.Shape = b.generateBlock(curColor)
+	block.Shape = b.Shapes[curColor]
 	block.Moving = true
 	return block
 }
@@ -107,10 +107,6 @@ func (b BlockGenerator) NewBlock() *Block {
 func (b BlockGenerator) newId() int {
 	idCounter++
 	return idCounter
-}
-
-func (b BlockGenerator) generateBlock(curColor int) [][]int {
-	return b.Shapes[curColor]
 }
 
 func (b *BlockGenerator) mustLoadImage(name string) ebiten.Image {
