@@ -56,6 +56,7 @@ func (g *Game) moveDown(block *Block) {
 		g.updateBoard(block, 0)
 		if g.Direction == dirDown && g.checkBoard(*block, 0, 3, false) {
 			block.Move(0, 3)
+			g.Direction = dirNone
 		} else {
 			block.Move(0, 1)
 		}
@@ -164,7 +165,7 @@ func (g *Game) checkBoard(block Block, dX int, dY int, rotate bool) bool {
 				break
 			} else if block.Shape[iy][ix] > 0 && len(g.Board) > gridY+iy && len(g.Board[0]) > gridX+ix &&
 				g.Board[gridY+iy][gridX+ix] > 0 {
-				log.Printf("Current grid check %v: %v", block.Id, g.Board[gridY+iy][gridX+ix])
+				//log.Printf("Current grid check %v: %v", block.Id, g.Board[gridY+iy][gridX+ix])
 				if g.Board[gridY+iy][gridX+ix] != block.Id {
 					result = false
 					break
