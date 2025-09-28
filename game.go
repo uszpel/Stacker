@@ -24,10 +24,15 @@ type Game struct {
 func (g *Game) Update() error {
 	block := g.getMovingBlock()
 	if block == nil {
+		completeLines := g.checkCompleteLines()
+		if len(completeLines) > 0 {
+			log.Printf("Complete lines: %v", completeLines)
+			//g.removeCompleteLines(completeLines)
+		}
+
 		block = g.Generator.NewBlock(len(g.Board[0])/2-1, 0)
 		g.Blocks = append(g.Blocks, block)
 
-		log.Printf("Complete lines: %v", g.checkCompleteLines())
 		log.Printf("New block: %v\n", block.Id)
 		//g.printBoard()
 	}
@@ -177,8 +182,8 @@ func (g *Game) checkBoard(block Block, dX int, dY int, rotate bool) bool {
 	return result
 }
 
-func (g *Game) checkCompleteLines() int {
-	completeLines := 0
+func (g *Game) checkCompleteLines() []int {
+	completeLines := make([]int, 0)
 	for ix, line := range g.Board {
 		curLine := 0
 		for iy := range line {
@@ -187,10 +192,23 @@ func (g *Game) checkCompleteLines() int {
 			}
 		}
 		if curLine == len(line)-1 {
-			completeLines++
+			completeLines = append(completeLines, ix)
 		}
 	}
 	return completeLines
+}
+
+func (g *Game) removeCompleteLines(lines []int) {
+	for _, index := range lines {
+		var newBoard [][]int
+		newBoard = append(newBoard, make([]int, len(g.Board[0])))
+		for lineIndex, line := range g.Board {
+			if lineIndex != index {
+				g.Board = append(g.Board, line)
+			}
+		}
+		g.Board = newBoard
+	}
 }
 
 func (g *Game) printBoard() {
@@ -209,7 +227,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			if e != 0 {
 				block := g.getBlock(e)
 				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(float64(iy*block.Sprite.Bounds().Dy()), float64(ix*block.Sprite.Bounds().Dx()))
+				op.GeoM.Translate(15+float64(iy*block.Sprite.Bounds().Dy()), 15+float64(ix*block.Sprite.Bounds().Dx()))
 				screen.DrawImage(&block.Sprite, op)
 			}
 		}
