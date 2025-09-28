@@ -27,7 +27,7 @@ func (g *Game) Update() error {
 		completeLines := g.checkCompleteLines()
 		if len(completeLines) > 0 {
 			log.Printf("Complete lines: %v", completeLines)
-			//g.removeCompleteLines(completeLines)
+			g.removeCompleteLines(completeLines)
 		}
 
 		block = g.Generator.NewBlock(len(g.Board[0])/2-1, 0)
@@ -204,21 +204,23 @@ func (g *Game) removeCompleteLines(lines []int) {
 		newBoard = append(newBoard, make([]int, len(g.Board[0])))
 		for lineIndex, line := range g.Board {
 			if lineIndex != index {
-				g.Board = append(g.Board, line)
+				newBoard = append(newBoard, line)
 			}
 		}
 		g.Board = newBoard
 	}
 }
 
-func (g *Game) printBoard() {
+func (g *Game) printBoard() string {
+	var result string
 	for ix, line := range g.Board {
 		lineString := ""
 		for iy := range line {
 			lineString = fmt.Sprintf("%s%3d ", lineString, g.Board[ix][iy])
 		}
-		fmt.Println(lineString)
+		result += lineString + "\n"
 	}
+	return result
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
