@@ -24,13 +24,13 @@ type Block struct {
 }
 
 func (b *Block) getGridPosition() (int, int) {
-	return b.Position.X / b.Sprite.Bounds().Dx(), b.Position.Y / b.Sprite.Bounds().Dy()
+	return b.Position.X, b.Position.Y
 }
 
 func (b *Block) Move(dX, dY int) {
 	if b.Moving {
-		b.Position.X = b.Position.X + dX*b.Sprite.Bounds().Dx()
-		b.Position.Y = b.Position.Y + dY*b.Sprite.Bounds().Dy()
+		b.Position.X = b.Position.X + dX
+		b.Position.Y = b.Position.Y + dY
 	}
 }
 
@@ -47,18 +47,6 @@ func (b *Block) Rotate() {
 			}
 		}
 		b.Shape = newShape
-	}
-}
-
-func (b *Block) Draw(screen *ebiten.Image) {
-	for iy, y := range b.Shape {
-		for ix := range y {
-			if b.Shape[iy][ix] > 0 {
-				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(float64(b.Position.X+ix*b.Sprite.Bounds().Dx()), float64(b.Position.Y+iy*b.Sprite.Bounds().Dy()))
-				screen.DrawImage(&b.Sprite, op)
-			}
-		}
 	}
 }
 
@@ -92,13 +80,13 @@ func (b *BlockGenerator) Init() {
 	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/yellow_square.png"))
 }
 
-func (b BlockGenerator) NewBlock() *Block {
+func (b BlockGenerator) NewBlock(x, y int) *Block {
 	curColor := rand.IntN(1000) % len(b.Sprites)
 	block := &Block{}
 	block.Id = b.newId()
 	block.Sprite = b.Sprites[curColor]
-	block.Position.X = 240
-	block.Position.Y = 54
+	block.Position.X = x
+	block.Position.Y = y
 	block.Shape = b.Shapes[curColor]
 	block.Moving = true
 	return block

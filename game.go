@@ -24,9 +24,10 @@ type Game struct {
 func (g *Game) Update() error {
 	block := g.getMovingBlock()
 	if block == nil {
-		block = g.Generator.NewBlock()
+		block = g.Generator.NewBlock(len(g.Board[0])/2-1, 0)
 		g.Blocks = append(g.Blocks, block)
 
+		log.Printf("Complete lines: %v", g.checkCompleteLines())
 		log.Printf("New block: %v\n", block.Id)
 		//g.printBoard()
 	}
@@ -176,18 +177,33 @@ func (g *Game) checkBoard(block Block, dX int, dY int, rotate bool) bool {
 	return result
 }
 
-func (g *Game) printBoard() {
-	for ix, row := range g.Board {
-		rowString := ""
-		for iy := range row {
-			rowString = fmt.Sprintf("%s%d ", rowString, g.Board[ix][iy])
+func (g *Game) checkCompleteLines() int {
+	completeLines := 0
+	for ix, line := range g.Board {
+		curLine := 0
+		for iy := range line {
+			if g.Board[ix][iy] != 0 {
+				curLine++
+			}
 		}
-		fmt.Println(rowString)
+		if curLine == len(line)-1 {
+			completeLines++
+		}
+	}
+	return completeLines
+}
+
+func (g *Game) printBoard() {
+	for ix, line := range g.Board {
+		lineString := ""
+		for iy := range line {
+			lineString = fmt.Sprintf("%s%3d ", lineString, g.Board[ix][iy])
+		}
+		fmt.Println(lineString)
 	}
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	//TODO: use Board instead of Blocks for drawing
 	for ix, b := range g.Board {
 		for iy, e := range b {
 			if e != 0 {
@@ -198,10 +214,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			}
 		}
 	}
-
-	/*for _, b := range g.Blocks {
-		b.Draw(screen)
-	}*/
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
