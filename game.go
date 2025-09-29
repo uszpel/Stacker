@@ -143,11 +143,11 @@ func (g *Game) initBoard() {
 	}
 
 	g.Score = 0
-	/*s, err := text.NewGoTextFaceSource(g.mustLoadFont("ARIAL.TTF"))
+	s, err := text.NewGoTextFaceSource(g.mustLoadFont("fonts/arial.ttf"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.FaceSource = s*/
+	g.FaceSource = s
 }
 
 func (g *Game) updateBoard(block *Block, value int) {
