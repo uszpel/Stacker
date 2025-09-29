@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 const dirNone = 0
@@ -19,6 +22,8 @@ type Game struct {
 	Blocks       []*Block
 	Generator    BlockGenerator
 	Board        [][]int
+	Score        int
+	FaceSource   *text.GoTextFaceSource
 }
 
 func (g *Game) Update() error {
@@ -28,6 +33,7 @@ func (g *Game) Update() error {
 		if len(completeLines) > 0 {
 			log.Printf("Complete lines: %v", completeLines)
 			g.removeCompleteLines(completeLines)
+			g.Score = g.Score + len(completeLines)
 		}
 
 		block = g.Generator.NewBlock(len(g.Board[0])/2-1, 0)
@@ -135,6 +141,13 @@ func (g *Game) initBoard() {
 	for i := 0; i < sizeY; i++ {
 		g.Board[i] = make([]int, sizeX)
 	}
+
+	g.Score = 0
+	/*s, err := text.NewGoTextFaceSource(g.mustLoadFont("ARIAL.TTF"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	g.FaceSource = s*/
 }
 
 func (g *Game) updateBoard(block *Block, value int) {
@@ -212,7 +225,7 @@ func (g *Game) removeCompleteLines(lines []int) {
 }
 
 func (g *Game) printBoard() string {
-	var result string
+	result := "Board: \n"
 	for ix, line := range g.Board {
 		lineString := ""
 		for iy := range line {
@@ -221,6 +234,15 @@ func (g *Game) printBoard() string {
 		result += lineString + "\n"
 	}
 	return result
+}
+
+func (g *Game) mustLoadFont(name string) io.Reader {
+	f, err := assets.Open(name)
+	if err != nil {
+		panic(err)
+	}
+
+	return bufio.NewReader(f)
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {

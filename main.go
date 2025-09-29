@@ -6,7 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed assets/*
+//go:embed assets/* fonts/*
 var assets embed.FS
 
 const myScreenWidth = 800
