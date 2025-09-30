@@ -1,9 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"io"
+	"image/color"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -23,7 +22,7 @@ type Game struct {
 	Generator    BlockGenerator
 	Board        [][]int
 	Score        int
-	FaceSource   *text.GoTextFaceSource
+	FontSource   *text.GoTextFaceSource
 }
 
 func (g *Game) Update() error {
@@ -143,11 +142,7 @@ func (g *Game) initBoard() {
 	}
 
 	g.Score = 0
-	s, err := text.NewGoTextFaceSource(g.mustLoadFont("fonts/arial.ttf"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	g.FaceSource = s
+	g.mustLoadFont("fonts/arial.ttf")
 }
 
 func (g *Game) updateBoard(block *Block, value int) {
@@ -236,16 +231,28 @@ func (g *Game) printBoard() string {
 	return result
 }
 
-func (g *Game) mustLoadFont(name string) io.Reader {
+func (g *Game) mustLoadFont(name string) {
 	f, err := assets.Open(name)
 	if err != nil {
 		panic(err)
 	}
 
-	return bufio.NewReader(f)
+	g.FontSource, err = text.NewGoTextFaceSource(f)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	face := &text.GoTextFace{
+		Source: g.FontSource,
+		Size:   18,
+	}
+	opts := &text.DrawOptions{}
+	opts.GeoM.Translate(10, 10)
+	opts.ColorScale.ScaleWithColor(color.White)
+	text.Draw(screen, fmt.Sprintf("Score: %v", g.Score), face, opts)
+
 	for ix, b := range g.Board {
 		for iy, e := range b {
 			if e != 0 {
