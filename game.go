@@ -15,6 +15,9 @@ const dirRight = 2
 const dirUp = 3
 const dirDown = 4
 
+const stateRunning = 0
+const stateReadyToRestart = 1
+
 type Game struct {
 	CicleCounter int
 	Direction    int
@@ -23,34 +26,42 @@ type Game struct {
 	Board        [][]int
 	Score        int
 	FontSource   *text.GoTextFaceSource
+	State        int
 }
 
 func (g *Game) Update() error {
-	block := g.getMovingBlock()
-	if block == nil {
-		completeLines := g.checkCompleteLines()
-		if len(completeLines) > 0 {
-			log.Printf("Complete lines: %v", completeLines)
-			g.removeCompleteLines(completeLines)
-			g.Score = g.Score + len(completeLines)
+	if g.State == stateRunning {
+		block := g.getMovingBlock()
+		if block == nil {
+			completeLines := g.checkCompleteLines()
+			if len(completeLines) > 0 {
+				log.Printf("Complete lines: %v", completeLines)
+				g.removeCompleteLines(completeLines)
+				g.Score = g.Score + len(completeLines)
+			}
+
+			block = g.Generator.NewBlock(len(g.Board[0])/2-1, 0)
+			g.Blocks = append(g.Blocks, block)
+			if !g.checkBoard(*block, 0, 1, false) {
+				g.State = stateReadyToRestart
+				log.Printf("Game finished.")
+				return nil
+			}
+
+			log.Printf("New block: %v\n", block.Id)
+			//g.printBoard()
 		}
 
-		block = g.Generator.NewBlock(len(g.Board[0])/2-1, 0)
-		g.Blocks = append(g.Blocks, block)
-
-		log.Printf("New block: %v\n", block.Id)
-		//g.printBoard()
-	}
-
-	g.Direction = g.getDirection(g.Direction)
-	if g.CicleCounter%20 == 0 {
-		g.moveSideways(block)
-		if g.CicleCounter >= 60 {
-			g.moveDown(block)
-			g.CicleCounter = 0
+		g.Direction = g.getDirection(g.Direction)
+		if g.CicleCounter%20 == 0 {
+			g.moveSideways(block)
+			if g.CicleCounter >= 60 {
+				g.moveDown(block)
+				g.CicleCounter = 0
+			}
 		}
+		g.CicleCounter++
 	}
-	g.CicleCounter++
 	return nil
 }
 
@@ -142,6 +153,7 @@ func (g *Game) initBoard() {
 	}
 
 	g.Score = 0
+	g.State = stateRunning
 	g.mustLoadFont("fonts/arial.ttf")
 }
 
@@ -257,9 +269,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		for iy, e := range b {
 			if e != 0 {
 				block := g.getBlock(e)
+				sprite := g.Generator.GetSprite(block.Sprite)
 				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(15+float64(iy*block.Sprite.Bounds().Dy()), 15+float64(ix*block.Sprite.Bounds().Dx()))
-				screen.DrawImage(&block.Sprite, op)
+				op.GeoM.Translate(15+float64(iy*sprite.Bounds().Dy()), 15+float64(ix*sprite.Bounds().Dx()))
+				screen.DrawImage(&sprite, op)
 			}
 		}
 	}

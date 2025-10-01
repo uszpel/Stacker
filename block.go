@@ -18,7 +18,7 @@ type Vector struct {
 type Block struct {
 	Id       int
 	Shape    [][]int
-	Sprite   ebiten.Image
+	Sprite   int
 	Position Vector
 	Moving   bool
 }
@@ -84,12 +84,20 @@ func (b BlockGenerator) NewBlock(x, y int) *Block {
 	curColor := rand.IntN(1000) % len(b.Sprites)
 	block := &Block{}
 	block.Id = b.newId()
-	block.Sprite = b.Sprites[curColor]
+	block.Sprite = curColor
 	block.Position.X = x
 	block.Position.Y = y
 	block.Shape = b.Shapes[curColor]
 	block.Moving = true
 	return block
+}
+
+func (b BlockGenerator) GetSprite(index int) ebiten.Image {
+	var result ebiten.Image
+	if index < len(b.Sprites) {
+		result = b.Sprites[index]
+	}
+	return result
 }
 
 func (b BlockGenerator) newId() int {
