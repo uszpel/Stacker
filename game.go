@@ -21,18 +21,22 @@ const stateReadyToRestart = 1
 type Game struct {
 	CicleCounter int
 	Direction    int
-	Blocks       []*Block
+	Block        *Block
 	Generator    BlockGenerator
-	Board        [][]int
+	Board        [][]BoardEntry
 	Score        int
 	FontSource   *text.GoTextFaceSource
 	State        int
 }
 
+type BoardEntry struct {
+	Id     int
+	Sprite int
+}
+
 func (g *Game) Update() error {
 	if g.State == stateRunning {
-		block := g.getMovingBlock()
-		if block == nil {
+		if g.Block == nil || !g.Block.Moving {
 			completeLines := g.checkCompleteLines()
 			if len(completeLines) > 0 {
 				log.Printf("Complete lines: %v", completeLines)
@@ -40,23 +44,22 @@ func (g *Game) Update() error {
 				g.Score = g.Score + len(completeLines)
 			}
 
-			block = g.Generator.NewBlock(len(g.Board[0])/2-1, 0)
-			g.Blocks = append(g.Blocks, block)
-			if !g.checkBoard(*block, 0, 1, false) {
+			g.Block = g.Generator.NewBlock(len(g.Board[0])/2-1, 0)
+			if !g.checkBoard(*g.Block, 0, 1, false) {
 				g.State = stateReadyToRestart
 				log.Printf("Game finished.")
 				return nil
 			}
 
-			log.Printf("New block: %v\n", block.Id)
-			//g.printBoard()
+			//log.Printf("New block: %v\n", block.Id)
+			//log.Print(g.printBoard())
 		}
 
 		g.Direction = g.getDirection(g.Direction)
 		if g.CicleCounter%20 == 0 {
-			g.moveSideways(block)
+			g.moveSideways(g.Block)
 			if g.CicleCounter >= 60 {
-				g.moveDown(block)
+				g.moveDown(g.Block)
 				g.CicleCounter = 0
 			}
 		}
@@ -68,21 +71,21 @@ func (g *Game) Update() error {
 func (g *Game) moveDown(block *Block) {
 	if g.Direction == dirUp {
 		if g.checkBoard(*block, 0, 0, true) {
-			g.updateBoard(block, 0)
+			g.updateBoard(block, 0, 0)
 			block.Rotate()
-			g.updateBoard(block, block.Id)
+			g.updateBoard(block, block.Id, block.Sprite)
 		}
 		g.Direction = dirNone
 	}
 	if g.checkBoard(*block, 0, 1, false) {
-		g.updateBoard(block, 0)
+		g.updateBoard(block, 0, 0)
 		if g.Direction == dirDown && g.checkBoard(*block, 0, 3, false) {
 			block.Move(0, 3)
 			g.Direction = dirNone
 		} else {
 			block.Move(0, 1)
 		}
-		g.updateBoard(block, block.Id)
+		g.updateBoard(block, block.Id, block.Sprite)
 	} else {
 		block.Moving = false
 	}
@@ -95,9 +98,9 @@ func (g *Game) moveSideways(block *Block) {
 			step = -1
 		}
 		if g.checkBoard(*block, step, 0, false) {
-			g.updateBoard(block, 0)
+			g.updateBoard(block, 0, 0)
 			block.Move(step, 0)
-			g.updateBoard(block, block.Id)
+			g.updateBoard(block, block.Id, block.Sprite)
 		}
 		g.Direction = dirNone
 	}
@@ -120,52 +123,34 @@ func (g *Game) getDirection(curDirection int) int {
 	return result
 }
 
-func (g *Game) getMovingBlock() *Block {
-	var block *Block = nil
-	for _, b := range g.Blocks {
-		if b.Moving {
-			block = b
-			break
-		}
-	}
-	return block
-}
-
-func (g *Game) getBlock(id int) *Block {
-	var block *Block = nil
-	for _, b := range g.Blocks {
-		if b.Id == id {
-			block = b
-			break
-		}
-	}
-	return block
-}
-
 func (g *Game) initBoard() {
 	g.Generator.Init()
 
 	sizeX := myScreenWidth / g.Generator.Sprites[0].Bounds().Dx()
 	sizeY := myScreenHeight / g.Generator.Sprites[0].Bounds().Dy()
-	g.Board = make([][]int, sizeY)
+	g.Board = make([][]BoardEntry, sizeY)
 	for i := 0; i < sizeY; i++ {
-		g.Board[i] = make([]int, sizeX)
+		g.Board[i] = make([]BoardEntry, sizeX)
 	}
 
+	g.Block = nil
 	g.Score = 0
 	g.State = stateRunning
 	g.mustLoadFont("fonts/arial.ttf")
 }
 
-func (g *Game) updateBoard(block *Block, value int) {
+func (g *Game) updateBoard(block *Block, id int, sprite int) {
 	gridX, gridY := block.getGridPosition()
-	if value > 0 {
+	if id > 0 {
 		//log.Printf("Current grid position %v: (%v,%v)", block.Id, gridX, gridY)
 	}
 	for iy, y := range block.Shape {
 		for ix := range y {
 			if block.Shape[iy][ix] > 0 {
-				g.Board[gridY+iy][gridX+ix] = value
+				g.Board[gridY+iy][gridX+ix] = BoardEntry{
+					Id:     id,
+					Sprite: sprite,
+				}
 			}
 		}
 	}
@@ -190,9 +175,9 @@ func (g *Game) checkBoard(block Block, dX int, dY int, rotate bool) bool {
 				result = false
 				break
 			} else if block.Shape[iy][ix] > 0 && len(g.Board) > gridY+iy && len(g.Board[0]) > gridX+ix &&
-				g.Board[gridY+iy][gridX+ix] > 0 {
-				//log.Printf("Current grid check %v: %v", block.Id, g.Board[gridY+iy][gridX+ix])
-				if g.Board[gridY+iy][gridX+ix] != block.Id {
+				g.Board[gridY+iy][gridX+ix].Id > 0 {
+				//log.Printf("Current grid check %v", g.Board[gridY+iy][gridX+ix])
+				if g.Board[gridY+iy][gridX+ix].Id != g.Block.Id {
 					result = false
 					break
 				}
@@ -207,7 +192,7 @@ func (g *Game) checkCompleteLines() []int {
 	for ix, line := range g.Board {
 		curLine := 0
 		for iy := range line {
-			if g.Board[ix][iy] != 0 {
+			if g.Board[ix][iy].Id != 0 {
 				curLine++
 			}
 		}
@@ -220,8 +205,8 @@ func (g *Game) checkCompleteLines() []int {
 
 func (g *Game) removeCompleteLines(lines []int) {
 	for _, index := range lines {
-		var newBoard [][]int
-		newBoard = append(newBoard, make([]int, len(g.Board[0])))
+		var newBoard [][]BoardEntry
+		newBoard = append(newBoard, make([]BoardEntry, len(g.Board[0])))
 		for lineIndex, line := range g.Board {
 			if lineIndex != index {
 				newBoard = append(newBoard, line)
@@ -236,7 +221,7 @@ func (g *Game) printBoard() string {
 	for ix, line := range g.Board {
 		lineString := ""
 		for iy := range line {
-			lineString = fmt.Sprintf("%s%3d ", lineString, g.Board[ix][iy])
+			lineString = fmt.Sprintf("%s%3d ", lineString, g.Board[ix][iy].Id)
 		}
 		result += lineString + "\n"
 	}
@@ -267,9 +252,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	for ix, b := range g.Board {
 		for iy, e := range b {
-			if e != 0 {
-				block := g.getBlock(e)
-				sprite := g.Generator.GetSprite(block.Sprite)
+			if e.Id != 0 {
+				sprite := g.Generator.GetSprite(e.Sprite)
 				op := &ebiten.DrawImageOptions{}
 				op.GeoM.Translate(15+float64(iy*sprite.Bounds().Dy()), 15+float64(ix*sprite.Bounds().Dx()))
 				screen.DrawImage(&sprite, op)

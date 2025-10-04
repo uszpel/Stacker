@@ -15,7 +15,6 @@ const myScreenHeight = 600
 func main() {
 	g := &Game{}
 	g.CicleCounter = 0
-	g.Blocks = make([]*Block, 0)
 	g.initBoard()
 	ebiten.SetWindowSize(myScreenWidth, myScreenHeight)
 	ebiten.SetWindowTitle("Stacker")
