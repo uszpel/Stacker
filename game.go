@@ -274,6 +274,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	opts.ColorScale.ScaleWithColor(color.White)
 	text.Draw(screen, fmt.Sprintf("Score: %v", g.Score), face, opts)
 
+	if g.State == statePaused {
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(250, 15)
+		opts.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 1})
+		text.Draw(screen, "Paused", face, opts)
+	}
+
 	for ix, b := range g.Board {
 		for iy, e := range b {
 			if e.Id != 0 {
