@@ -61,13 +61,8 @@ func (g *Game) Update() error {
 
 		if g.CicleCounter%20 == 0 {
 			g.moveSideways(g.Block)
-			switch g.State {
-			case statePauseRequested:
-				g.State = statePaused
-			case stateRunningRequested:
-				g.State = stateRunning
-			}
 			if g.CicleCounter >= 60 {
+				g.checkState()
 				g.moveDown(g.Block)
 				g.CicleCounter = 0
 			}
@@ -115,6 +110,17 @@ func (g *Game) moveSideways(block *Block) {
 	}
 }
 
+func (g *Game) checkState() {
+	switch g.State {
+	case statePauseRequested:
+		g.State = statePaused
+		log.Print("Game paused.")
+	case stateRunningRequested:
+		g.State = stateRunning
+		log.Print("Game resumed.")
+	}
+}
+
 func (g *Game) checkKeyboardInput() {
 	if g.State == stateRunning {
 		if ebiten.IsKeyPressed(ebiten.KeyLeft) {
@@ -130,13 +136,11 @@ func (g *Game) checkKeyboardInput() {
 			g.Direction = dirDown
 		}
 		if ebiten.IsKeyPressed(ebiten.KeySpace) {
-			log.Print("Game paused.")
 			g.State = statePauseRequested
 		}
 	} else {
 		if ebiten.IsKeyPressed(ebiten.KeySpace) {
 			if g.State == statePaused {
-				log.Print("Game resumed.")
 				g.State = stateRunningRequested
 			}
 		}
