@@ -15,8 +15,11 @@ const dirRight = 2
 const dirUp = 3
 const dirDown = 4
 
-const stateRunning = 0
-const stateReadyToRestart = 1
+const stateRunningRequested = 0
+const stateRunning = 1
+const stateReadyToRestart = 2
+const statePauseRequested = 3
+const statePaused = 4
 
 type Game struct {
 	CicleCounter int
@@ -35,7 +38,8 @@ type BoardEntry struct {
 }
 
 func (g *Game) Update() error {
-	if g.State == stateRunning {
+	g.checkKeyboardInput()
+	if g.State != statePaused && g.State != stateReadyToRestart {
 		if g.Block == nil || !g.Block.Moving {
 			completeLines := g.checkCompleteLines()
 			if len(completeLines) > 0 {
@@ -55,9 +59,14 @@ func (g *Game) Update() error {
 			//log.Print(g.printBoard())
 		}
 
-		g.Direction = g.getDirection(g.Direction)
 		if g.CicleCounter%20 == 0 {
 			g.moveSideways(g.Block)
+			switch g.State {
+			case statePauseRequested:
+				g.State = statePaused
+			case stateRunningRequested:
+				g.State = stateRunning
+			}
 			if g.CicleCounter >= 60 {
 				g.moveDown(g.Block)
 				g.CicleCounter = 0
@@ -106,21 +115,32 @@ func (g *Game) moveSideways(block *Block) {
 	}
 }
 
-func (g *Game) getDirection(curDirection int) int {
-	result := curDirection
-	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-		result = dirLeft
+func (g *Game) checkKeyboardInput() {
+	if g.State == stateRunning {
+		if ebiten.IsKeyPressed(ebiten.KeyLeft) {
+			g.Direction = dirLeft
+		}
+		if ebiten.IsKeyPressed(ebiten.KeyRight) {
+			g.Direction = dirRight
+		}
+		if ebiten.IsKeyPressed(ebiten.KeyUp) {
+			g.Direction = dirUp
+		}
+		if ebiten.IsKeyPressed(ebiten.KeyDown) {
+			g.Direction = dirDown
+		}
+		if ebiten.IsKeyPressed(ebiten.KeySpace) {
+			log.Print("Game paused.")
+			g.State = statePauseRequested
+		}
+	} else {
+		if ebiten.IsKeyPressed(ebiten.KeySpace) {
+			if g.State == statePaused {
+				log.Print("Game resumed.")
+				g.State = stateRunningRequested
+			}
+		}
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyRight) {
-		result = dirRight
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyUp) {
-		result = dirUp
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyDown) {
-		result = dirDown
-	}
-	return result
 }
 
 func (g *Game) initBoard() {
