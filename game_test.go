@@ -7,9 +7,9 @@ import (
 func TestRemovingLines(t *testing.T) {
 	game := &Game{}
 	game.Board = [][]BoardEntry{
-		{{0, 0}, {1, 1}, {0, 0}, {0, 0}},
-		{{0, 0}, {1, 1}, {0, 0}, {0, 0}},
-		{{1, 1}, {1, 1}, {2, 2}, {0, 0}},
+		{{0, 0}, {1, 1}, {0, 0}},
+		{{0, 0}, {1, 1}, {0, 0}},
+		{{1, 1}, {1, 1}, {2, 2}},
 	}
 	t.Log(game.printBoard())
 
@@ -19,9 +19,9 @@ func TestRemovingLines(t *testing.T) {
 	t.Log(game.printBoard())
 
 	if !compareBoards(game.Board, [][]BoardEntry{
-		{{0, 0}, {0, 0}, {0, 0}, {0, 0}},
-		{{0, 0}, {1, 1}, {0, 0}, {0, 0}},
-		{{0, 0}, {1, 1}, {0, 0}, {0, 0}},
+		{{0, 0}, {0, 0}, {0, 0}},
+		{{0, 0}, {1, 1}, {0, 0}},
+		{{0, 0}, {1, 1}, {0, 0}},
 	}) {
 		t.FailNow()
 	}

@@ -9,8 +9,8 @@ import (
 //go:embed assets/* fonts/*
 var assets embed.FS
 
-const myScreenWidth = 800
-const myScreenHeight = 600
+const myScreenWidth = 600
+const myScreenHeight = 800
 
 func main() {
 	g := &Game{}

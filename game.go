@@ -191,10 +191,10 @@ func (g *Game) checkBoard(block Block, dX int, dY int, rotate bool) bool {
 	}
 	for iy, y := range block.Shape {
 		for ix := range y {
-			if gridX < 0 || len(g.Board[0]) <= gridX+ix+1 {
+			if gridX < 0 || len(g.Board[0]) <= gridX+ix {
 				result = false
 				break
-			} else if len(g.Board) <= gridY+iy {
+			} else if len(g.Board) <= gridY+iy+1 {
 				block.Moving = false
 				result = false
 				break
@@ -220,7 +220,7 @@ func (g *Game) checkCompleteLines() []int {
 				curLine++
 			}
 		}
-		if curLine == len(line)-1 {
+		if curLine == len(line) {
 			completeLines = append(completeLines, ix)
 		}
 	}
