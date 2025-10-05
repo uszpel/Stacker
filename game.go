@@ -84,7 +84,8 @@ func (g *Game) moveDown(block *Block) {
 	if g.checkBoard(*block, 0, 1, false) {
 		g.updateBoard(block, 0, 0)
 		_, gridY := block.getGridPosition()
-		distanceFromGround := (len(g.Board) - 2) - (gridY + len(block.Shape))
+		//TODO: improve calculation with actual board values
+		distanceFromGround := (len(g.Board) - 1) - (gridY + len(block.Shape))
 		if distanceFromGround > 4 {
 			distanceFromGround = 4
 		} else if distanceFromGround == 0 {
