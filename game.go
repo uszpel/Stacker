@@ -54,7 +54,6 @@ func (g *Game) Update() error {
 				log.Printf("Game finished.")
 				return nil
 			}
-
 			//log.Printf("New block: %v\n", block.Id)
 			//log.Print(g.printBoard())
 		}
@@ -62,8 +61,9 @@ func (g *Game) Update() error {
 		if g.CicleCounter%20 == 0 {
 			g.moveSideways(g.Block)
 			if g.CicleCounter >= 60 {
-				g.checkState()
-				g.moveDown(g.Block)
+				if g.checkState() {
+					g.moveDown(g.Block)
+				}
 				g.CicleCounter = 0
 			}
 		}
@@ -83,12 +83,19 @@ func (g *Game) moveDown(block *Block) {
 	}
 	if g.checkBoard(*block, 0, 1, false) {
 		g.updateBoard(block, 0, 0)
-		if g.Direction == dirDown && g.checkBoard(*block, 0, 3, false) {
-			block.Move(0, 3)
+		_, gridY := block.getGridPosition()
+		distanceFromGround := (len(g.Board) - 2) - (gridY + len(block.Shape))
+		if distanceFromGround > 4 {
+			distanceFromGround = 4
+		} else if distanceFromGround == 0 {
 			g.Direction = dirNone
+		}
+		if g.Direction == dirDown && g.checkBoard(*block, 0, distanceFromGround, false) {
+			block.Move(0, distanceFromGround)
 		} else {
 			block.Move(0, 1)
 		}
+		g.Direction = dirNone
 		g.updateBoard(block, block.Id, block.Sprite)
 	} else {
 		block.Moving = false
@@ -110,19 +117,23 @@ func (g *Game) moveSideways(block *Block) {
 	}
 }
 
-func (g *Game) checkState() {
+func (g *Game) checkState() bool {
+	result := true
 	switch g.State {
 	case statePauseRequested:
 		g.State = statePaused
+		result = false
 		log.Print("Game paused.")
 	case stateRunningRequested:
 		g.State = stateRunning
 		log.Print("Game resumed.")
 	}
+	return result
 }
 
 func (g *Game) checkKeyboardInput() {
-	if g.State == stateRunning {
+	switch g.State {
+	case stateRunning:
 		if ebiten.IsKeyPressed(ebiten.KeyLeft) {
 			g.Direction = dirLeft
 		}
@@ -138,11 +149,9 @@ func (g *Game) checkKeyboardInput() {
 		if ebiten.IsKeyPressed(ebiten.KeySpace) {
 			g.State = statePauseRequested
 		}
-	} else {
+	case statePaused:
 		if ebiten.IsKeyPressed(ebiten.KeySpace) {
-			if g.State == statePaused {
-				g.State = stateRunningRequested
-			}
+			g.State = stateRunningRequested
 		}
 	}
 }
@@ -200,7 +209,6 @@ func (g *Game) checkBoard(block Block, dX int, dY int, rotate bool) bool {
 				break
 			} else if block.Shape[iy][ix] > 0 && len(g.Board) > gridY+iy && len(g.Board[0]) > gridX+ix &&
 				g.Board[gridY+iy][gridX+ix].Id > 0 {
-				//log.Printf("Current grid check %v", g.Board[gridY+iy][gridX+ix])
 				if g.Board[gridY+iy][gridX+ix].Id != g.Block.Id {
 					result = false
 					break
@@ -274,7 +282,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	opts.ColorScale.ScaleWithColor(color.White)
 	text.Draw(screen, fmt.Sprintf("Score: %v", g.Score), face, opts)
 
-	if g.State == statePaused {
+	if g.State == statePaused || g.State == statePauseRequested {
 		opts := &text.DrawOptions{}
 		opts.GeoM.Translate(250, 15)
 		opts.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 1})
