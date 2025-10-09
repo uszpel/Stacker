@@ -82,13 +82,10 @@ func (g *Game) moveDown(block *Block) {
 		g.Direction = dirNone
 	}
 	if g.checkBoard(*block, 0, 1, false) {
+		distanceFromGround := g.calcDistanceFromGround(*block)
 		g.updateBoard(block, 0, 0)
-		_, gridY := block.getGridPosition()
-		//TODO: improve calculation with actual board values
-		distanceFromGround := (len(g.Board) - 1) - (gridY + len(block.Shape))
-		if distanceFromGround > 4 {
-			distanceFromGround = 4
-		} else if distanceFromGround == 0 {
+
+		if distanceFromGround == 0 {
 			g.Direction = dirNone
 		}
 		if g.Direction == dirDown && g.checkBoard(*block, 0, distanceFromGround, false) {
@@ -155,6 +152,30 @@ func (g *Game) checkKeyboardInput() {
 			g.State = stateRunningRequested
 		}
 	}
+}
+
+func (g *Game) calcDistanceFromGround(block Block) int {
+	result := len(g.Board) - 1
+	gridX, gridY := block.getGridPosition()
+	for iy, y := range block.Shape {
+		for ix := range y {
+			if block.Shape[iy][ix] > 0 {
+				distance := 0
+				for line := gridY; line+iy < len(g.Board)-1; line++ {
+					if g.Board[line+iy][gridX+ix].Id == 0 {
+						distance++
+					}
+					if g.Board[line+iy][gridX+ix].Id > 0 && g.Board[line+iy][gridX+ix].Id != block.Id {
+						break
+					}
+				}
+				if distance < result {
+					result = distance
+				}
+			}
+		}
+	}
+	return result
 }
 
 func (g *Game) initBoard() {
