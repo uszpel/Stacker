@@ -54,6 +54,7 @@ func (g *Game) Update() error {
 				log.Printf("Game finished.")
 				return nil
 			}
+			g.updateBoard(g.Block, g.Block.Id, g.Block.Sprite)
 			//log.Printf("New block: %v\n", block.Id)
 			//log.Print(g.printBoard())
 		}
