@@ -311,6 +311,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	switch g.State {
 	case statePaused:
+		fallthrough
 	case statePauseRequested:
 		opts := &text.DrawOptions{}
 		opts.GeoM.Translate(250, 15)
@@ -318,7 +319,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		text.Draw(screen, "Paused", face, opts)
 	case stateReadyToRestart:
 		opts := &text.DrawOptions{}
-		opts.GeoM.Translate(250, 15)
+		opts.GeoM.Translate(200, 15)
 		opts.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 1})
 		text.Draw(screen, "Game over. Restart?", face, opts)
 	}
