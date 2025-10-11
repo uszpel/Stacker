@@ -12,12 +12,11 @@ var assets embed.FS
 
 const myScreenWidth = 600
 const myScreenHeight = 800
-const version = "0.3.0"
+const version = "0.4.0"
 
 func main() {
 	g := &Game{}
-	g.CicleCounter = 0
-	g.initBoard()
+	g.InitGame()
 	ebiten.SetWindowSize(myScreenWidth, myScreenHeight)
 	ebiten.SetWindowTitle("Stacker")
 	fmt.Printf("Stacker version %v\n", version)

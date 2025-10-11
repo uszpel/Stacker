@@ -30,6 +30,7 @@ type Game struct {
 	Score        int
 	FontSource   *text.GoTextFaceSource
 	State        int
+	Level        int
 }
 
 type BoardEntry struct {
@@ -46,9 +47,12 @@ func (g *Game) Update() error {
 				log.Printf("Complete lines: %v", completeLines)
 				g.removeCompleteLines(completeLines)
 				g.Score = g.Score + len(completeLines)
+				if g.Score >= g.Level*10 {
+					g.Level++
+				}
 			}
 
-			g.Block = g.Generator.NewBlock(len(g.Board[0])/2-1, 0)
+			g.Block = g.Generator.NewBlock(len(g.Board[0])/2-1, 1)
 			if !g.checkBoard(*g.Block, 0, 1, false) {
 				g.State = stateReadyToRestart
 				log.Printf("Game finished.")
@@ -61,7 +65,7 @@ func (g *Game) Update() error {
 
 		if g.CicleCounter%20 == 0 {
 			g.moveSideways(g.Block)
-			if g.CicleCounter >= 60 {
+			if g.CicleCounter >= (60 / g.Level) {
 				if g.checkState() {
 					g.moveDown(g.Block)
 				}
@@ -183,9 +187,14 @@ func (g *Game) calcDistanceFromGround(block Block) int {
 	return result
 }
 
-func (g *Game) initBoard() {
+func (g *Game) InitGame() {
+	g.CicleCounter = 0
 	g.Generator.Init()
+	g.mustLoadFont("fonts/arial.ttf")
+	g.initBoard()
+}
 
+func (g *Game) initBoard() {
 	sizeX := myScreenWidth / g.Generator.Sprites[0].Bounds().Dx()
 	sizeY := myScreenHeight / g.Generator.Sprites[0].Bounds().Dy()
 	g.Board = make([][]BoardEntry, sizeY)
@@ -196,7 +205,7 @@ func (g *Game) initBoard() {
 	g.Block = nil
 	g.Score = 0
 	g.State = stateRunning
-	g.mustLoadFont("fonts/arial.ttf")
+	g.Level = 1
 }
 
 func (g *Game) updateBoard(block *Block, id int, sprite int) {
@@ -304,24 +313,16 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		Source: g.FontSource,
 		Size:   18,
 	}
-	opts := &text.DrawOptions{}
-	opts.GeoM.Translate(10, 10)
-	opts.ColorScale.ScaleWithColor(color.White)
-	text.Draw(screen, fmt.Sprintf("Score: %v", g.Score), face, opts)
+	g.prinText(screen, face, 10, 10, color.White, fmt.Sprintf("Score: %v", g.Score))
+	g.prinText(screen, face, 10, 35, color.White, fmt.Sprintf("Level: %v", g.Level))
 
 	switch g.State {
 	case statePaused:
 		fallthrough
 	case statePauseRequested:
-		opts := &text.DrawOptions{}
-		opts.GeoM.Translate(250, 15)
-		opts.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 1})
-		text.Draw(screen, "Paused", face, opts)
+		g.prinText(screen, face, 250, 15, color.RGBA{255, 0, 0, 1}, "Paused")
 	case stateReadyToRestart:
-		opts := &text.DrawOptions{}
-		opts.GeoM.Translate(200, 15)
-		opts.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 1})
-		text.Draw(screen, "Game over. Restart?", face, opts)
+		g.prinText(screen, face, 200, 15, color.RGBA{255, 0, 0, 1}, "Game over. Restart?")
 	}
 
 	for ix, b := range g.Board {
@@ -334,6 +335,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			}
 		}
 	}
+}
+
+func (g *Game) prinText(screen *ebiten.Image, face *text.GoTextFace, x float64, y float64, color color.Color, message string) {
+	opts := &text.DrawOptions{}
+	opts.GeoM.Translate(x, y)
+	opts.ColorScale.ScaleWithColor(color)
+	text.Draw(screen, message, face, opts)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
