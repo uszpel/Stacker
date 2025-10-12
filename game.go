@@ -59,6 +59,7 @@ func (g *Game) Update() error {
 				return nil
 			}
 			g.updateBoard(g.Block, g.Block.Id, g.Block.Sprite)
+			g.Direction = dirNone
 			//log.Printf("New block: %v\n", block.Id)
 			//log.Print(g.printBoard())
 		}
