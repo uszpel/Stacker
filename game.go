@@ -28,6 +28,7 @@ type Game struct {
 	Generator    BlockGenerator
 	Board        [][]BoardEntry
 	Score        int
+	Lines        int
 	FontSource   *text.GoTextFaceSource
 	State        int
 	Level        int
@@ -46,12 +47,14 @@ func (g *Game) Update() error {
 			if len(completeLines) > 0 {
 				log.Printf("Complete lines: %v", completeLines)
 				g.removeCompleteLines(completeLines)
-				g.Score = g.Score + len(completeLines)
-				if g.Score >= g.Level*10 {
+				g.Lines = g.Lines + len(completeLines)
+				if g.Lines >= g.Level*10 {
 					g.Level++
 				}
 			}
-
+			if g.Block != nil {
+				g.Score += g.Block.Score
+			}
 			g.Block = g.Generator.NewBlock(len(g.Board[0])/2-1, 2)
 			if !g.checkBoard(*g.Block, 0, 1, false) {
 				g.State = stateReadyToRestart
@@ -205,6 +208,7 @@ func (g *Game) initBoard() {
 
 	g.Block = nil
 	g.Score = 0
+	g.Lines = 0
 	g.State = stateRunning
 	g.Level = 1
 }
@@ -321,8 +325,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		Source: g.FontSource,
 		Size:   18,
 	}
-	g.prinText(screen, face, 10, 10, color.Black, fmt.Sprintf("Score: %v", g.Score))
-	g.prinText(screen, face, 10, 35, color.Black, fmt.Sprintf("Level: %v", g.Level))
+	g.prinText(screen, face, 15, 10, color.Black, fmt.Sprintf("Score: %d", g.Score))
+	g.prinText(screen, face, 15, 35, color.Black, fmt.Sprintf("Lines: %d", g.Lines))
+	g.prinText(screen, face, 520, 10, color.Black, fmt.Sprintf("Level: %2d", g.Level))
 
 	for ix, b := range g.Board {
 		for iy, e := range b {
@@ -343,9 +348,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	case statePaused:
 		fallthrough
 	case statePauseRequested:
-		g.prinText(screen, boldFace, 240, 380, color.RGBA{255, 0, 0, 255}, "Paused")
+		g.prinText(screen, boldFace, 240, 380, color.White, "Paused")
 	case stateReadyToRestart:
-		g.prinText(screen, boldFace, 150, 380, color.RGBA{255, 0, 0, 255}, "Game over. Restart?")
+		g.prinText(screen, boldFace, 150, 380, color.White, "Game over. Restart?")
 	}
 }
 

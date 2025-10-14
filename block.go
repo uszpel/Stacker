@@ -21,6 +21,7 @@ type Block struct {
 	Sprite   int
 	Position Vector
 	Moving   bool
+	Score    int
 }
 
 func (b *Block) getGridPosition() (int, int) {
@@ -103,6 +104,7 @@ func (b BlockGenerator) NewBlock(x, y int) *Block {
 	block.Position.X = x
 	block.Position.Y = y
 	block.Shape = b.Shapes[curColor]
+	block.Score = 5
 	block.Moving = true
 	return block
 }
