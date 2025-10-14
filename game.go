@@ -52,7 +52,7 @@ func (g *Game) Update() error {
 				}
 			}
 
-			g.Block = g.Generator.NewBlock(len(g.Board[0])/2-1, 1)
+			g.Block = g.Generator.NewBlock(len(g.Board[0])/2-1, 2)
 			if !g.checkBoard(*g.Block, 0, 1, false) {
 				g.State = stateReadyToRestart
 				log.Printf("Game finished.")
@@ -310,21 +310,19 @@ func (g *Game) mustLoadFont(name string) {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	screen.Fill(color.RGBA{0xaf, 0xaf, 0xaf, 0xff})
+	playingField := ebiten.NewImage(myScreenWidth-25, myScreenHeight-80)
+	playingField.Fill(color.RGBA{0x2f, 0x2f, 0x2f, 0xff})
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(15, 63)
+	screen.DrawImage(playingField, op)
+
 	face := &text.GoTextFace{
 		Source: g.FontSource,
 		Size:   18,
 	}
-	g.prinText(screen, face, 10, 10, color.White, fmt.Sprintf("Score: %v", g.Score))
-	g.prinText(screen, face, 10, 35, color.White, fmt.Sprintf("Level: %v", g.Level))
-
-	switch g.State {
-	case statePaused:
-		fallthrough
-	case statePauseRequested:
-		g.prinText(screen, face, 250, 15, color.RGBA{255, 0, 0, 1}, "Paused")
-	case stateReadyToRestart:
-		g.prinText(screen, face, 200, 15, color.RGBA{255, 0, 0, 1}, "Game over. Restart?")
-	}
+	g.prinText(screen, face, 10, 10, color.Black, fmt.Sprintf("Score: %v", g.Score))
+	g.prinText(screen, face, 10, 35, color.Black, fmt.Sprintf("Level: %v", g.Level))
 
 	for ix, b := range g.Board {
 		for iy, e := range b {
@@ -335,6 +333,19 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				screen.DrawImage(&sprite, op)
 			}
 		}
+	}
+
+	boldFace := &text.GoTextFace{
+		Source: g.FontSource,
+		Size:   36,
+	}
+	switch g.State {
+	case statePaused:
+		fallthrough
+	case statePauseRequested:
+		g.prinText(screen, boldFace, 240, 380, color.RGBA{255, 0, 0, 255}, "Paused")
+	case stateReadyToRestart:
+		g.prinText(screen, boldFace, 150, 380, color.RGBA{255, 0, 0, 255}, "Game over. Restart?")
 	}
 }
 
