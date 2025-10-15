@@ -194,7 +194,7 @@ func (g *Game) calcDistanceFromGround(block Block) int {
 func (g *Game) InitGame() {
 	g.CicleCounter = 0
 	g.Generator.Init()
-	g.mustLoadFont("fonts/arial.ttf")
+	g.mustLoadFont("fonts/arial_bold.ttf")
 	g.initBoard()
 }
 
@@ -327,7 +327,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 	g.prinText(screen, face, 15, 10, color.Black, fmt.Sprintf("Score: %d", g.Score))
 	g.prinText(screen, face, 15, 35, color.Black, fmt.Sprintf("Lines: %d", g.Lines))
-	g.prinText(screen, face, 520, 10, color.Black, fmt.Sprintf("Level: %2d", g.Level))
+	g.prinText(screen, face, 515, 10, color.Black, fmt.Sprintf("Level: %2d", g.Level))
 
 	for ix, b := range g.Board {
 		for iy, e := range b {
