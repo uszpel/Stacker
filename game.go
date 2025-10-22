@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"log"
+	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -20,6 +21,7 @@ const stateRunning = 1
 const stateReadyToRestart = 2
 const statePauseRequested = 3
 const statePaused = 4
+const stateReady = 5
 
 type Game struct {
 	CicleCounter int
@@ -41,7 +43,7 @@ type BoardEntry struct {
 
 func (g *Game) Update() error {
 	g.checkKeyboardInput()
-	if g.State != statePaused && g.State != stateReadyToRestart {
+	if g.State != statePaused && g.State != stateReadyToRestart && g.State != stateReady {
 		if g.Block == nil || !g.Block.Moving {
 			completeLines := g.checkCompleteLines()
 			if len(completeLines) > 0 {
@@ -140,6 +142,13 @@ func (g *Game) checkState() bool {
 
 func (g *Game) checkKeyboardInput() {
 	switch g.State {
+	case stateReady:
+		if ebiten.IsKeyPressed(ebiten.KeyS) {
+			g.State = stateRunning
+		}
+		if ebiten.IsKeyPressed(ebiten.KeyQ) {
+			os.Exit(0)
+		}
 	case stateRunning:
 		if ebiten.IsKeyPressed(ebiten.KeyLeft) {
 			g.Direction = dirLeft
@@ -209,7 +218,7 @@ func (g *Game) initBoard() {
 	g.Block = nil
 	g.Score = 0
 	g.Lines = 0
-	g.State = stateRunning
+	g.State = stateReady
 	g.Level = 1
 }
 
@@ -315,43 +324,63 @@ func (g *Game) mustLoadFont(name string) {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{0xaf, 0xaf, 0xaf, 0xff})
-	playingField := ebiten.NewImage(myScreenWidth-25, myScreenHeight-80)
-	playingField.Fill(color.RGBA{0x2f, 0x2f, 0x2f, 0xff})
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(15, 63)
-	screen.DrawImage(playingField, op)
 
-	face := &text.GoTextFace{
-		Source: g.FontSource,
-		Size:   18,
-	}
-	g.prinText(screen, face, 15, 10, color.Black, fmt.Sprintf("Score: %d", g.Score))
-	g.prinText(screen, face, 15, 35, color.Black, fmt.Sprintf("Lines: %d", g.Lines))
-	g.prinText(screen, face, 515, 10, color.Black, fmt.Sprintf("Level: %2d", g.Level))
+	if g.State == stateReady {
+		g.drawMenu(screen)
+	} else {
+		playingField := ebiten.NewImage(myScreenWidth-25, myScreenHeight-80)
+		playingField.Fill(color.RGBA{0x2f, 0x2f, 0x2f, 0xff})
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(15, 63)
+		screen.DrawImage(playingField, op)
 
-	for ix, b := range g.Board {
-		for iy, e := range b {
-			if e.Id != 0 {
-				sprite := g.Generator.GetSprite(e.Sprite)
-				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(15+float64(iy*sprite.Bounds().Dy()), 15+float64(ix*sprite.Bounds().Dx()))
-				screen.DrawImage(&sprite, op)
+		face := &text.GoTextFace{
+			Source: g.FontSource,
+			Size:   18,
+		}
+		g.prinText(screen, face, 15, 10, color.Black, fmt.Sprintf("Score: %d", g.Score))
+		g.prinText(screen, face, 15, 35, color.Black, fmt.Sprintf("Lines: %d", g.Lines))
+		g.prinText(screen, face, 515, 10, color.Black, fmt.Sprintf("Level: %2d", g.Level))
+
+		for ix, b := range g.Board {
+			for iy, e := range b {
+				if e.Id != 0 {
+					sprite := g.Generator.GetSprite(e.Sprite)
+					op := &ebiten.DrawImageOptions{}
+					op.GeoM.Translate(15+float64(iy*sprite.Bounds().Dy()), 15+float64(ix*sprite.Bounds().Dx()))
+					screen.DrawImage(&sprite, op)
+				}
 			}
 		}
-	}
 
+		boldFace := &text.GoTextFace{
+			Source: g.FontSource,
+			Size:   36,
+		}
+		switch g.State {
+		case statePaused:
+			fallthrough
+		case statePauseRequested:
+			g.prinText(screen, boldFace, 240, 380, color.White, "Paused")
+		case stateReadyToRestart:
+			g.prinText(screen, boldFace, 150, 380, color.White, "Game over. Restart?")
+		}
+	}
+}
+
+func (g *Game) drawMenu(screen *ebiten.Image) {
 	boldFace := &text.GoTextFace{
 		Source: g.FontSource,
 		Size:   36,
 	}
-	switch g.State {
-	case statePaused:
-		fallthrough
-	case statePauseRequested:
-		g.prinText(screen, boldFace, 240, 380, color.White, "Paused")
-	case stateReadyToRestart:
-		g.prinText(screen, boldFace, 150, 380, color.White, "Game over. Restart?")
+	g.prinText(screen, boldFace, 220, 280, color.Black, "Stacker")
+
+	face := &text.GoTextFace{
+		Source: g.FontSource,
+		Size:   22,
 	}
+	g.prinText(screen, face, 250, 340, color.Black, "[S]tart")
+	g.prinText(screen, face, 250, 370, color.Black, "[Q]uit")
 }
 
 func (g *Game) prinText(screen *ebiten.Image, face *text.GoTextFace, x float64, y float64, color color.Color, message string) {

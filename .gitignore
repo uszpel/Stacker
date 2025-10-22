@@ -2,3 +2,6 @@
 
 stacker
 stacker.*
+
+# GoLand directory
+.idea/
