@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"log"
+	"math/rand/v2"
 	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -24,7 +25,7 @@ const statePaused = 4
 const stateReady = 5
 
 type Game struct {
-	CicleCounter int
+	CycleCounter int
 	Direction    int
 	Block        *Block
 	Generator    BlockGenerator
@@ -34,6 +35,7 @@ type Game struct {
 	FontSource   *text.GoTextFaceSource
 	State        int
 	Level        int
+	Menu         *ebiten.Image
 }
 
 type BoardEntry struct {
@@ -69,16 +71,16 @@ func (g *Game) Update() error {
 			//log.Print(g.printBoard())
 		}
 
-		if g.CicleCounter%20 == 0 {
+		if g.CycleCounter%20 == 0 {
 			g.moveSideways(g.Block)
-			if g.CicleCounter >= (60 / g.Level) {
+			if g.CycleCounter >= (60 / g.Level) {
 				if g.checkState() {
 					g.moveDown(g.Block)
 				}
-				g.CicleCounter = 0
+				g.CycleCounter = 0
 			}
 		}
-		g.CicleCounter++
+		g.CycleCounter++
 	}
 	return nil
 }
@@ -201,7 +203,7 @@ func (g *Game) calcDistanceFromGround(block Block) int {
 }
 
 func (g *Game) InitGame() {
-	g.CicleCounter = 0
+	g.CycleCounter = 0
 	g.Generator.Init()
 	g.mustLoadFont("fonts/arial_bold.ttf")
 	g.initBoard()
@@ -216,6 +218,7 @@ func (g *Game) initBoard() {
 	}
 
 	g.Block = nil
+	g.Menu = nil
 	g.Score = 0
 	g.Lines = 0
 	g.State = stateReady
@@ -369,6 +372,23 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) drawMenu(screen *ebiten.Image) {
+	if g.Menu == nil {
+		g.Menu = ebiten.NewImage(myScreenWidth, myScreenHeight)
+		sprite := g.Generator.Menu
+		for ix, b := range g.Board {
+			for iy := range b {
+				if rand.IntN(1000)%2 == 0 && (ix < 7 || ix > 12) {
+					op := &ebiten.DrawImageOptions{}
+					op.GeoM.Translate(15+float64(iy*sprite.Bounds().Dy()), 15+float64(ix*sprite.Bounds().Dx()))
+					g.Menu.DrawImage(&sprite, op)
+				}
+			}
+		}
+	}
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(0, 0)
+	screen.DrawImage(g.Menu, op)
+
 	boldFace := &text.GoTextFace{
 		Source: g.FontSource,
 		Size:   36,

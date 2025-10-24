@@ -52,6 +52,7 @@ func (b *Block) Rotate() {
 }
 
 type BlockGenerator struct {
+	Menu    ebiten.Image
 	Sprites []ebiten.Image
 	Shapes  [][][]int
 }
@@ -94,6 +95,8 @@ func (b *BlockGenerator) Init() {
 	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/yellow_square.png"))
 	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/yellow_square.png"))
 	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/purple_square.png"))
+
+	b.Menu = b.mustLoadImage("assets/grey_square.png")
 }
 
 func (b BlockGenerator) NewBlock(x, y int) *Block {
