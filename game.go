@@ -23,6 +23,7 @@ const stateReadyToRestart = 2
 const statePauseRequested = 3
 const statePaused = 4
 const stateReady = 5
+const stateShowHighscores = 6
 
 type Game struct {
 	CycleCounter int
@@ -50,7 +51,7 @@ func (g *Game) Update() error {
 		if g.Block == nil || !g.Block.Moving {
 			completeLines := g.checkCompleteLines()
 			if len(completeLines) > 0 {
-				log.Printf("Complete lines: %v", completeLines)
+				//log.Printf("Complete lines: %v", completeLines)
 				g.removeCompleteLines(completeLines)
 				g.Lines = g.Lines + len(completeLines)
 				if g.Lines >= g.Level*10 {
@@ -135,10 +136,10 @@ func (g *Game) checkState() bool {
 	case statePauseRequested:
 		g.State = statePaused
 		result = false
-		log.Print("Game paused.")
+		//log.Print("Game paused.")
 	case stateRunningRequested:
 		g.State = stateRunning
-		log.Print("Game resumed.")
+		//log.Print("Game resumed.")
 	}
 	return result
 }
@@ -149,8 +150,15 @@ func (g *Game) checkKeyboardInput() {
 		if ebiten.IsKeyPressed(ebiten.KeyS) {
 			g.State = stateRunning
 		}
+		if ebiten.IsKeyPressed(ebiten.KeyH) {
+			g.State = stateShowHighscores
+		}
 		if ebiten.IsKeyPressed(ebiten.KeyQ) {
 			os.Exit(0)
+		}
+	case stateShowHighscores:
+		if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+			g.State = stateReady
 		}
 	case stateRunning:
 		if ebiten.IsKeyPressed(ebiten.KeyLeft) {
@@ -330,9 +338,12 @@ func (g *Game) mustLoadFont(name string) {
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{0x5f, 0x5f, 0x5f, 0xff})
 
-	if g.State == stateReady {
+	switch g.State {
+	case stateReady:
 		g.drawMenu(screen)
-	} else {
+	case stateShowHighscores:
+		g.drawHighscores(screen)
+	default:
 		g.drawBoard(screen)
 	}
 }
@@ -383,7 +394,7 @@ func (g *Game) drawMenu(screen *ebiten.Image) {
 		for ix, b := range g.Board {
 			for iy := range b {
 				sprite := g.Generator.GetSprite(rand.IntN(1000) % len(g.Generator.Sprites))
-				if rand.IntN(1000)%2 == 0 && (ix < 7 || ix > 12) && !(ix > 23) {
+				if rand.IntN(1000)%2 == 0 && (ix < 7 || ix > 13) && !(ix > 23) {
 					op := &ebiten.DrawImageOptions{}
 					op.GeoM.Translate(15+float64(iy*sprite.Bounds().Dy()), 15+float64(ix*sprite.Bounds().Dx()))
 					g.Menu.DrawImage(&sprite, op)
@@ -406,7 +417,12 @@ func (g *Game) drawMenu(screen *ebiten.Image) {
 		Size:   22,
 	}
 	g.prinText(screen, face, 250, 340, g.FontColor, "[S]tart")
-	g.prinText(screen, face, 250, 370, g.FontColor, "[Q]uit")
+	g.prinText(screen, face, 250, 370, g.FontColor, "[H]ighscores")
+	g.prinText(screen, face, 250, 400, g.FontColor, "[Q]uit")
+}
+
+func (g *Game) drawHighscores(screen *ebiten.Image) {
+
 }
 
 func (g *Game) prinText(screen *ebiten.Image, face *text.GoTextFace, x float64, y float64, color color.Color, message string) {
