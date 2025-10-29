@@ -5,11 +5,11 @@ import (
 	"testing"
 )
 
-const datafile = "highscores.test.data"
+const testdatafile = "highscores.test.data"
 
 func TestReadHighscoreWithoutFile(t *testing.T) {
-	os.Remove(datafile)
-	score, err := ReadHighscore(datafile)
+	os.Remove(testdatafile)
+	score, err := ReadHighscore(testdatafile)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
@@ -20,10 +20,10 @@ func TestReadHighscoreWithoutFile(t *testing.T) {
 }
 
 func TestReadHighscoreWithFile(t *testing.T) {
-	WriteHighscore(datafile, createTestScore())
-	defer os.Remove(datafile)
+	WriteHighscore(testdatafile, createTestScore())
+	defer os.Remove(testdatafile)
 
-	score, err := ReadHighscore(datafile)
+	score, err := ReadHighscore(testdatafile)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
@@ -34,10 +34,10 @@ func TestReadHighscoreWithFile(t *testing.T) {
 }
 
 func TestCheckScoreWithFile(t *testing.T) {
-	WriteHighscore(datafile, createTestScore())
-	defer os.Remove(datafile)
+	WriteHighscore(testdatafile, createTestScore())
+	defer os.Remove(testdatafile)
 
-	score, err := ReadHighscore(datafile)
+	score, err := ReadHighscore(testdatafile)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
@@ -51,10 +51,10 @@ func TestCheckScoreWithFile(t *testing.T) {
 }
 
 func TestInsertScoreWithFile(t *testing.T) {
-	WriteHighscore(datafile, createTestScore())
-	defer os.Remove(datafile)
+	WriteHighscore(testdatafile, createTestScore())
+	defer os.Remove(testdatafile)
 
-	score, err := ReadHighscore(datafile)
+	score, err := ReadHighscore(testdatafile)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()

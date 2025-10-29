@@ -1,7 +1,9 @@
 # Ignore binaries
-
 stacker
 stacker.*
+
+# Ignore game state
+highscores.data
 
 # GoLand directory
 .idea/

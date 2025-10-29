@@ -13,6 +13,7 @@ type Score struct {
 	Lines int    `json:"lines"`
 	Name  string `json:"name"`
 	Date  string `json:"date"`
+	IsNew bool   `json:"-"`
 }
 
 type HighScore struct {
@@ -47,6 +48,7 @@ func (h HighScore) CheckScore(score int) int {
 
 func (h *HighScore) InsertScore(score Score) {
 	index := h.CheckScore(score.Score)
+	score.IsNew = true
 	if index == -1 {
 		h.Scores = append(h.Scores, score)
 	} else {
@@ -55,6 +57,9 @@ func (h *HighScore) InsertScore(score Score) {
 		newScores = append(newScores, score)
 		newScores = append(newScores, h.Scores[index:]...)
 		h.Scores = newScores
+	}
+	if len(h.Scores) > 10 {
+		h.Scores = h.Scores[:10]
 	}
 }
 
@@ -94,8 +99,9 @@ func WriteHighscore(datafile string, highScore *HighScore) error {
 		return err
 	}
 
+	os.Remove(datafile)
 	//TODO: encrypt data
-	err = os.WriteFile(datafile, result, 0466)
+	err = os.WriteFile(datafile, result, 0666)
 	if err != nil {
 		return err
 	}

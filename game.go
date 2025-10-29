@@ -25,6 +25,8 @@ const statePaused = 4
 const stateReady = 5
 const stateShowHighscores = 6
 
+const datafile = "highscores.data"
+
 type Game struct {
 	CycleCounter int
 	Direction    int
@@ -38,6 +40,7 @@ type Game struct {
 	State        int
 	Level        int
 	Menu         *ebiten.Image
+	HighScore    *HighScore
 }
 
 type BoardEntry struct {
@@ -63,7 +66,10 @@ func (g *Game) Update() error {
 			}
 			g.Block = g.Generator.NewBlock(len(g.Board[0])/2-1, 2)
 			if !g.checkBoard(*g.Block, 0, 1, false) {
-				g.State = stateReadyToRestart
+				g.HighScore.InsertScore(*NewScore(g.Score, g.Lines, ""))
+				//g.State = stateReadyToRestart
+				g.initBoard()
+				g.State = stateShowHighscores
 				log.Printf("Game finished.")
 				return nil
 			}
@@ -158,6 +164,10 @@ func (g *Game) checkKeyboardInput() {
 		}
 	case stateShowHighscores:
 		if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+			err := WriteHighscore(datafile, g.HighScore)
+			if err != nil {
+				log.Printf("Error writing highscore: %v", err)
+			}
 			g.State = stateReady
 		}
 	case stateRunning:
@@ -215,6 +225,7 @@ func (g *Game) InitGame() {
 	g.CycleCounter = 0
 	g.Generator.Init()
 	g.mustLoadFont("fonts/arial_bold.ttf")
+	g.HighScore, _ = ReadHighscore(datafile)
 	g.initBoard()
 }
 
@@ -422,7 +433,20 @@ func (g *Game) drawMenu(screen *ebiten.Image) {
 }
 
 func (g *Game) drawHighscores(screen *ebiten.Image) {
+	boldFace := &text.GoTextFace{
+		Source: g.FontSource,
+		Size:   36,
+	}
+	g.prinText(screen, boldFace, 120, 130, g.FontColor, "Stacker Highscores")
 
+	face := &text.GoTextFace{
+		Source: g.FontSource,
+		Size:   22,
+	}
+	for index, score := range g.HighScore.Scores {
+		g.prinText(screen, face, 150, 200+float64(index*30), g.FontColor,
+			fmt.Sprintf("%2d. %d pts %d lines %s", index+1, score.Score, score.Lines, score.Name))
+	}
 }
 
 func (g *Game) prinText(screen *ebiten.Image, face *text.GoTextFace, x float64, y float64, color color.Color, message string) {
