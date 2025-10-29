@@ -50,7 +50,7 @@ type BoardEntry struct {
 
 func (g *Game) Update() error {
 	g.checkKeyboardInput()
-	if g.State != statePaused && g.State != stateReadyToRestart && g.State != stateReady {
+	if g.isRunning() {
 		if g.Block == nil || !g.Block.Moving {
 			completeLines := g.checkCompleteLines()
 			if len(completeLines) > 0 {
@@ -91,6 +91,11 @@ func (g *Game) Update() error {
 		g.CycleCounter++
 	}
 	return nil
+}
+
+func (g Game) isRunning() bool {
+	return g.State == stateRunningRequested || g.State == stateRunning || g.State == statePauseRequested
+	//return g.State != statePaused && g.State != stateReadyToRestart && g.State != stateReady && g.State != stateShowHighscores
 }
 
 func (g *Game) moveDown(block *Block) {
