@@ -11,20 +11,24 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
-const dirNone = 0
-const dirLeft = 1
-const dirRight = 2
-const dirUp = 3
-const dirDown = 4
+const (
+	dirNone = iota
+	dirLeft
+	dirRight
+	dirUp
+	dirDown
+)
 
-const stateRunningRequested = 0
-const stateRunning = 1
-const stateReadyToRestart = 2
-const statePauseRequested = 3
-const statePaused = 4
-const stateReady = 5
-const stateShowHighscores = 6
-const stateExitRequested = 7
+const (
+	stateRunningRequested = iota
+	stateRunning
+	stateReadyToRestart
+	statePauseRequested
+	statePaused
+	stateReady
+	stateShowHighscores
+	stateExitRequested
+)
 
 const datafile = "highscores.data"
 
