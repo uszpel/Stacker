@@ -24,6 +24,7 @@ const statePauseRequested = 3
 const statePaused = 4
 const stateReady = 5
 const stateShowHighscores = 6
+const stateExitRequested = 7
 
 const datafile = "highscores.data"
 
@@ -191,6 +192,9 @@ func (g *Game) checkKeyboardInput() {
 		if ebiten.IsKeyPressed(ebiten.KeySpace) {
 			g.State = statePauseRequested
 		}
+		if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+			g.State = stateExitRequested
+		}
 	case statePaused:
 		if ebiten.IsKeyPressed(ebiten.KeySpace) {
 			g.State = stateRunningRequested
@@ -198,6 +202,14 @@ func (g *Game) checkKeyboardInput() {
 	case stateReadyToRestart:
 		if ebiten.IsKeyPressed(ebiten.KeyY) {
 			g.initBoard()
+		}
+	case stateExitRequested:
+		if ebiten.IsKeyPressed(ebiten.KeyY) {
+			g.State = stateReady
+			g.initBoard()
+		}
+		if ebiten.IsKeyPressed(ebiten.KeyN) {
+			g.State = stateRunning
 		}
 	}
 }
@@ -400,7 +412,9 @@ func (g *Game) drawBoard(screen *ebiten.Image) {
 	case statePauseRequested:
 		g.prinText(screen, boldFace, 240, 380, color.White, "Paused")
 	case stateReadyToRestart:
-		g.prinText(screen, boldFace, 150, 380, color.White, "Game over. Restart?")
+		g.prinText(screen, boldFace, 150, 380, color.White, "Game over. Restart? (y/n)")
+	case stateExitRequested:
+		g.prinText(screen, boldFace, 150, 380, color.White, "Exit game? (y/n)")
 	}
 }
 
