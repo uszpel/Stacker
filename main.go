@@ -12,7 +12,7 @@ var assets embed.FS
 
 const myScreenWidth = 600
 const myScreenHeight = 800
-const version = "0.9.0"
+const version = "0.10.0"
 
 func main() {
 	g := &Game{}

@@ -69,6 +69,12 @@ func (h *HighScore) InsertScore(score Score) {
 	}
 }
 
+func (h *HighScore) FinishScore() {
+	for index := range h.Scores {
+		h.Scores[index].IsNew = false
+	}
+}
+
 func (h HighScore) PrintScores() string {
 	result := ""
 	for _, curScore := range h.Scores {

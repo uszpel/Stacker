@@ -178,6 +178,7 @@ func (g *Game) checkKeyboardInput() {
 		}
 	case stateShowHighscores:
 		if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+			g.HighScore.FinishScore()
 			g.State = stateReady
 		}
 	case stateRunning:
@@ -468,8 +469,12 @@ func (g *Game) drawHighscores(screen *ebiten.Image) {
 	}
 	if g.HighScore != nil {
 		for index, score := range g.HighScore.Scores {
+			name := score.Name
+			if score.IsNew {
+				name = "_"
+			}
 			g.prinText(screen, face, 150, 200+float64(index*30), g.FontColor,
-				fmt.Sprintf("%2d. %d pts %d lines %s", index+1, score.Score, score.Lines, score.Name))
+				fmt.Sprintf("%2d. %d pts %d lines %s", index+1, score.Score, score.Lines, name))
 		}
 	}
 }
