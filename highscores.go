@@ -1,12 +1,18 @@
 package main
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"time"
 )
+
+var key = []byte("0gAINL28JgcauhLmXbe1agdqIJWVwsLI")
 
 type Score struct {
 	Score int    `json:"score"`
@@ -71,6 +77,30 @@ func (h HighScore) PrintScores() string {
 	return result
 }
 
+func decryptData(ciphertext []byte) []byte {
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		log.Println(err)
+	}
+
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		log.Println(err)
+	}
+
+	nonceSize := gcm.NonceSize()
+	if len(ciphertext) < nonceSize {
+		log.Println(err)
+	}
+
+	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		log.Println(err)
+	}
+	return plaintext
+}
+
 func ReadHighscore(datafile string) (*HighScore, error) {
 	if _, err := os.Stat(datafile); err == nil {
 		result, err := os.ReadFile(datafile)
@@ -78,9 +108,8 @@ func ReadHighscore(datafile string) (*HighScore, error) {
 			return nil, err
 		}
 
-		//TODO: Decrypt data
 		data := &HighScore{}
-		err = json.Unmarshal(result, &data)
+		err = json.Unmarshal(decryptData(result), &data)
 		if err != nil {
 			return nil, err
 		}
@@ -93,6 +122,25 @@ func ReadHighscore(datafile string) (*HighScore, error) {
 	return NewHighScore(), nil
 }
 
+func encryptData(data []byte) []byte {
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		log.Println(err)
+	}
+
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		log.Println(err)
+	}
+
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+		fmt.Println(err)
+	}
+
+	return gcm.Seal(nonce, nonce, data, nil)
+}
+
 func WriteHighscore(datafile string, highScore *HighScore) error {
 	result, err := json.Marshal(highScore)
 	if err != nil {
@@ -100,8 +148,7 @@ func WriteHighscore(datafile string, highScore *HighScore) error {
 	}
 
 	os.Remove(datafile)
-	//TODO: encrypt data
-	err = os.WriteFile(datafile, result, 0666)
+	err = os.WriteFile(datafile, encryptData(result), 0666)
 	if err != nil {
 		return err
 	}

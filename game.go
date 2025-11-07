@@ -72,7 +72,11 @@ func (g *Game) Update() error {
 			g.Block = g.Generator.NewBlock(len(g.Board[0])/2-1, 2)
 			if !g.checkBoard(*g.Block, 0, 1, false) {
 				g.HighScore.InsertScore(*NewScore(g.Score, g.Lines, ""))
-				//g.State = stateReadyToRestart
+				err := WriteHighscore(datafile, g.HighScore)
+				if err != nil {
+					log.Printf("Error writing highscore: %v", err)
+				}
+
 				g.initBoard()
 				g.State = stateShowHighscores
 				log.Printf("Game finished.")
@@ -174,10 +178,6 @@ func (g *Game) checkKeyboardInput() {
 		}
 	case stateShowHighscores:
 		if ebiten.IsKeyPressed(ebiten.KeyEscape) {
-			err := WriteHighscore(datafile, g.HighScore)
-			if err != nil {
-				log.Printf("Error writing highscore: %v", err)
-			}
 			g.State = stateReady
 		}
 	case stateRunning:
@@ -466,9 +466,11 @@ func (g *Game) drawHighscores(screen *ebiten.Image) {
 		Source: g.FontSource,
 		Size:   22,
 	}
-	for index, score := range g.HighScore.Scores {
-		g.prinText(screen, face, 150, 200+float64(index*30), g.FontColor,
-			fmt.Sprintf("%2d. %d pts %d lines %s", index+1, score.Score, score.Lines, score.Name))
+	if g.HighScore != nil {
+		for index, score := range g.HighScore.Scores {
+			g.prinText(screen, face, 150, 200+float64(index*30), g.FontColor,
+				fmt.Sprintf("%2d. %d pts %d lines %s", index+1, score.Score, score.Lines, score.Name))
+		}
 	}
 }
 
