@@ -178,9 +178,14 @@ func (g *Game) checkKeyboardInput() {
 		}
 	case stateShowHighscores:
 		if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+			err := WriteHighscore(datafile, g.HighScore)
+			if err != nil {
+				log.Printf("Error writing highscore: %v", err)
+			}
 			g.HighScore.FinishScore()
 			g.State = stateReady
 		}
+		g.HighScore.AddToNewName(g.getCurrentKey())
 	case stateRunning:
 		if ebiten.IsKeyPressed(ebiten.KeyLeft) {
 			g.Direction = dirLeft
@@ -471,7 +476,7 @@ func (g *Game) drawHighscores(screen *ebiten.Image) {
 		for index, score := range g.HighScore.Scores {
 			name := score.Name
 			if score.IsNew {
-				name = "_"
+				name += "_"
 			}
 			g.prinText(screen, face, 150, 200+float64(index*30), g.FontColor,
 				fmt.Sprintf("%2d. %d pts %d lines %s", index+1, score.Score, score.Lines, name))
@@ -484,6 +489,16 @@ func (g *Game) prinText(screen *ebiten.Image, face *text.GoTextFace, x float64, 
 	opts.GeoM.Translate(x, y)
 	opts.ColorScale.ScaleWithColor(color)
 	text.Draw(screen, message, face, opts)
+}
+
+func (g *Game) getCurrentKey() string {
+	runes := make([]rune, 0)
+	runes = ebiten.AppendInputChars(runes)
+	if len(runes) > 0 {
+		//log.Printf("Test: %v", string(runes[0]))
+		return string(runes[0])
+	}
+	return ""
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {

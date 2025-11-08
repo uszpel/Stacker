@@ -69,6 +69,16 @@ func (h *HighScore) InsertScore(score Score) {
 	}
 }
 
+func (h *HighScore) AddToNewName(text string) {
+	if len(text) > 0 {
+		for index := range h.Scores {
+			if h.Scores[index].IsNew && len(h.Scores[index].Name) < 8 {
+				h.Scores[index].Name += text
+			}
+		}
+	}
+}
+
 func (h *HighScore) FinishScore() {
 	for index := range h.Scores {
 		h.Scores[index].IsNew = false
