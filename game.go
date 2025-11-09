@@ -185,6 +185,9 @@ func (g *Game) checkKeyboardInput() {
 			g.HighScore.FinishScore()
 			g.State = stateReady
 		}
+		if ebiten.IsKeyPressed(ebiten.KeyBackspace) {
+			g.HighScore.RemoveFromNewName()
+		}
 		g.HighScore.AddToNewName(g.getCurrentKey())
 	case stateRunning:
 		if ebiten.IsKeyPressed(ebiten.KeyLeft) {
@@ -475,7 +478,7 @@ func (g *Game) drawHighscores(screen *ebiten.Image) {
 	if g.HighScore != nil {
 		for index, score := range g.HighScore.Scores {
 			name := score.Name
-			if score.IsNew {
+			if score.IsNew && len(score.Name) < 8 {
 				name += "_"
 			}
 			g.prinText(screen, face, 150, 200+float64(index*30), g.FontColor,
@@ -495,7 +498,7 @@ func (g *Game) getCurrentKey() string {
 	runes := make([]rune, 0)
 	runes = ebiten.AppendInputChars(runes)
 	if len(runes) > 0 {
-		//log.Printf("Test: %v", string(runes[0]))
+		log.Printf("Test: %v", string(runes[0]))
 		return string(runes[0])
 	}
 	return ""

@@ -79,6 +79,14 @@ func (h *HighScore) AddToNewName(text string) {
 	}
 }
 
+func (h *HighScore) RemoveFromNewName() {
+	for index := range h.Scores {
+		if h.Scores[index].IsNew && len(h.Scores[index].Name) > 0 {
+			h.Scores[index].Name = h.Scores[index].Name[:len(h.Scores[index].Name)-1]
+		}
+	}
+}
+
 func (h *HighScore) FinishScore() {
 	for index := range h.Scores {
 		h.Scores[index].IsNew = false
