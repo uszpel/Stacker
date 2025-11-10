@@ -480,12 +480,14 @@ func (g *Game) drawHighscores(screen *ebiten.Image) {
 	}
 	if g.HighScore != nil {
 		for index, score := range g.HighScore.Scores {
-			name := score.Name
+			curName := score.Name
+			curColor := g.FontColor
 			if score.IsNew && len(score.Name) < 8 {
-				name += "_"
+				curName += "_"
+				curColor = color.RGBA{255, 0, 0, 255}
 			}
-			g.prinText(screen, face, 150, 200+float64(index*30), g.FontColor,
-				fmt.Sprintf("%2d. %d pts (%d lines) - %s", index+1, score.Score, score.Lines, name))
+			g.prinText(screen, face, 150, 200+float64(index*30), curColor,
+				fmt.Sprintf("%2d. %d pts (%d lines) - %s", index+1, score.Score, score.Lines, curName))
 		}
 	}
 
@@ -493,7 +495,12 @@ func (g *Game) drawHighscores(screen *ebiten.Image) {
 		Source: g.FontSource,
 		Size:   15,
 	}
-	g.prinText(screen, smallFace, 20, 770, g.FontColor, "To exit press ESC")
+	if g.HighScore.HasNewEntry() {
+		g.prinText(screen, face, 160, 670, g.FontColor, "Please add your name.")
+		g.prinText(screen, smallFace, 20, 770, g.FontColor, "To save and exit press ESC")
+	} else {
+		g.prinText(screen, smallFace, 20, 770, g.FontColor, "To exit press ESC")
+	}
 }
 
 func (g *Game) prinText(screen *ebiten.Image, face *text.GoTextFace, x float64, y float64, color color.Color, message string) {
