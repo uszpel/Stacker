@@ -22,7 +22,6 @@ const (
 const (
 	stateRunningRequested = iota
 	stateRunning
-	stateReadyToRestart
 	statePauseRequested
 	statePaused
 	stateReady
@@ -211,10 +210,6 @@ func (g *Game) checkKeyboardInput() {
 	case statePaused:
 		if ebiten.IsKeyPressed(ebiten.KeySpace) {
 			g.State = stateRunningRequested
-		}
-	case stateReadyToRestart:
-		if ebiten.IsKeyPressed(ebiten.KeyY) {
-			g.initBoard()
 		}
 	case stateExitRequested:
 		if ebiten.IsKeyPressed(ebiten.KeyY) {
@@ -424,8 +419,6 @@ func (g *Game) drawBoard(screen *ebiten.Image) {
 		fallthrough
 	case statePauseRequested:
 		g.prinText(screen, boldFace, 240, 380, color.White, "Paused")
-	case stateReadyToRestart:
-		g.prinText(screen, boldFace, 150, 380, color.White, "Game over. Restart? (y/n)")
 	case stateExitRequested:
 		g.prinText(screen, boldFace, 150, 380, color.White, "Exit game? (y/n)")
 	}
@@ -486,8 +479,9 @@ func (g *Game) drawHighscores(screen *ebiten.Image) {
 				curName += "_"
 				curColor = color.RGBA{255, 0, 0, 255}
 			}
-			g.prinText(screen, face, 150, 200+float64(index*30), curColor,
-				fmt.Sprintf("%2d. %d pts (%d lines) - %s", index+1, score.Score, score.Lines, curName))
+			g.prinText(screen, face, 110, 200+float64(index*30), curColor, fmt.Sprintf("%2d.", index+1))
+			g.prinText(screen, face, 170, 200+float64(index*30), curColor, fmt.Sprintf("%d pts/%d lines", score.Score, score.Lines))
+			g.prinText(screen, face, 350, 200+float64(index*30), curColor, curName)
 		}
 	}
 
@@ -496,7 +490,7 @@ func (g *Game) drawHighscores(screen *ebiten.Image) {
 		Size:   15,
 	}
 	if g.HighScore.HasNewEntry() {
-		g.prinText(screen, face, 160, 670, g.FontColor, "Please add your name.")
+		g.prinText(screen, face, 170, 80, g.FontColor, "Please add your name.")
 		g.prinText(screen, smallFace, 20, 770, g.FontColor, "To save and exit press ESC")
 	} else {
 		g.prinText(screen, smallFace, 20, 770, g.FontColor, "To exit press ESC")
