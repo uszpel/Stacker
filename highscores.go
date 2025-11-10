@@ -23,12 +23,14 @@ type Score struct {
 }
 
 type HighScore struct {
-	Scores []Score `json:"scores"`
+	Scores     []Score `json:"scores"`
+	ScoreAdded bool    `json:"-"`
 }
 
 func NewHighScore() *HighScore {
 	return &HighScore{
-		Scores: make([]Score, 0),
+		Scores:     make([]Score, 0),
+		ScoreAdded: false,
 	}
 }
 
@@ -67,6 +69,7 @@ func (h *HighScore) InsertScore(score Score) {
 	if len(h.Scores) > 10 {
 		h.Scores = h.Scores[:10]
 	}
+	h.ScoreAdded = true
 }
 
 func (h *HighScore) AddToNewName(text string) {
@@ -87,10 +90,20 @@ func (h *HighScore) RemoveFromNewName() {
 	}
 }
 
+func (h *HighScore) HasNewEntry() bool {
+	for index := range h.Scores {
+		if h.Scores[index].IsNew {
+			return true
+		}
+	}
+	return false
+}
+
 func (h *HighScore) FinishScore() {
 	for index := range h.Scores {
 		h.Scores[index].IsNew = false
 	}
+	h.ScoreAdded = false
 }
 
 func (h HighScore) PrintScores() string {

@@ -79,7 +79,7 @@ func (g *Game) Update() error {
 
 				g.initBoard()
 				g.State = stateShowHighscores
-				log.Printf("Game finished.")
+				//log.Printf("Game finished.")
 				return nil
 			}
 			g.updateBoard(g.Block, g.Block.Id, g.Block.Sprite)
@@ -469,6 +469,9 @@ func (g *Game) drawHighscores(screen *ebiten.Image) {
 		Source: g.FontSource,
 		Size:   36,
 	}
+	if g.HighScore.ScoreAdded {
+		g.prinText(screen, boldFace, 190, 30, color.RGBA{255, 0, 0, 255}, "Game over!")
+	}
 	g.prinText(screen, boldFace, 120, 130, g.FontColor, "Stacker Highscores")
 
 	face := &text.GoTextFace{
@@ -482,9 +485,15 @@ func (g *Game) drawHighscores(screen *ebiten.Image) {
 				name += "_"
 			}
 			g.prinText(screen, face, 150, 200+float64(index*30), g.FontColor,
-				fmt.Sprintf("%2d. %d pts %d lines %s", index+1, score.Score, score.Lines, name))
+				fmt.Sprintf("%2d. %d pts (%d lines) - %s", index+1, score.Score, score.Lines, name))
 		}
 	}
+
+	smallFace := &text.GoTextFace{
+		Source: g.FontSource,
+		Size:   15,
+	}
+	g.prinText(screen, smallFace, 20, 770, g.FontColor, "To exit press ESC")
 }
 
 func (g *Game) prinText(screen *ebiten.Image, face *text.GoTextFace, x float64, y float64, color color.Color, message string) {
@@ -498,7 +507,7 @@ func (g *Game) getCurrentKey() string {
 	runes := make([]rune, 0)
 	runes = ebiten.AppendInputChars(runes)
 	if len(runes) > 0 {
-		log.Printf("Test: %v", string(runes[0]))
+		//log.Printf("Test: %v", string(runes[0]))
 		return string(runes[0])
 	}
 	return ""
