@@ -258,7 +258,7 @@ func (g *Game) initBoard() {
 	sizeX := myScreenWidth / g.Generator.Sprites[0].Bounds().Dx()
 	sizeY := myScreenHeight / g.Generator.Sprites[0].Bounds().Dy()
 	g.Board = make([][]BoardEntry, sizeY)
-	for i := 0; i < sizeY; i++ {
+	for i := range sizeY {
 		g.Board[i] = make([]BoardEntry, sizeX)
 	}
 
@@ -455,6 +455,12 @@ func (g *Game) drawMenu(screen *ebiten.Image) {
 	g.prinText(screen, face, 250, 340, g.FontColor, "[S]tart")
 	g.prinText(screen, face, 250, 370, g.FontColor, "[H]ighscores")
 	g.prinText(screen, face, 250, 400, g.FontColor, "[Q]uit")
+
+	smallFace := &text.GoTextFace{
+		Source: g.FontSource,
+		Size:   12,
+	}
+	g.prinText(screen, smallFace, 355, 300, g.FontColor, fmt.Sprintf("v%s", version))
 }
 
 func (g *Game) drawHighscores(screen *ebiten.Image) {
