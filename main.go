@@ -22,7 +22,7 @@ func main() {
 	ebiten.SetWindowSize(myScreenWidth, myScreenHeight)
 	ebiten.SetWindowTitle("Stacker")
 	fmt.Printf("Stacker version %v\n", version)
-	fmt.Println("Copyright (c) 2025 uszpel.")
+	fmt.Println("Copyright (c) 2025-2026 uszpel.")
 
 	err := ebiten.RunGame(g)
 	if err != nil {
