@@ -87,13 +87,12 @@ func (b *BlockGenerator) Init() {
 	})
 
 	b.Sprites = make([]ebiten.Image, 0)
-	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/blue_square.png"))
-	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/blue_square.png"))
-	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/green_square.png"))
-	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/red_square.png"))
-	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/yellow_square.png"))
-	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/yellow_square.png"))
-	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/purple_square.png"))
+	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/images/blue_square.png"))
+	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/images/blue_square.png"))
+	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/images/green_square.png"))
+	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/images/red_square.png"))
+	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/images/yellow_square.png"))
+	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/images/purple_square.png"))
 }
 
 func (b BlockGenerator) NewBlock(x, y int) *Block {

@@ -7,13 +7,13 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed assets/* fonts/*
+//go:embed assets/*
 var assets embed.FS
 
 const (
 	myScreenWidth  = 600
 	myScreenHeight = 800
-	version        = "0.15.0"
+	version        = "0.16.0"
 )
 
 func main() {

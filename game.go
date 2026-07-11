@@ -249,7 +249,7 @@ func (g *Game) calcDistanceFromGround(block Block) int {
 func (g *Game) InitGame() {
 	g.CycleCounter = 0
 	g.Generator.Init()
-	g.mustLoadFont("fonts/arial_bold.ttf")
+	g.mustLoadFont("assets/fonts/arial_bold.ttf")
 	g.HighScore, _ = ReadHighscore(datafile)
 	g.initBoard()
 }
