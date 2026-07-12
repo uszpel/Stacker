@@ -52,7 +52,7 @@ func (b *Block) Rotate() {
 }
 
 type BlockGenerator struct {
-	Sprites []ebiten.Image
+	Sprites []*ebiten.Image
 	Shapes  [][][]int
 }
 
@@ -86,7 +86,7 @@ func (b *BlockGenerator) Init() {
 		{0, 1, 0},
 	})
 
-	b.Sprites = make([]ebiten.Image, 0)
+	b.Sprites = make([]*ebiten.Image, 0)
 	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/images/blue_square.png"))
 	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/images/blue_square.png"))
 	b.Sprites = append(b.Sprites, b.mustLoadImage("assets/images/green_square.png"))
@@ -108,12 +108,11 @@ func (b BlockGenerator) NewBlock(x, y int) *Block {
 	return block
 }
 
-func (b BlockGenerator) GetSprite(index int) ebiten.Image {
-	var result ebiten.Image
+func (b BlockGenerator) GetSprite(index int) *ebiten.Image {
 	if index < len(b.Sprites) {
-		result = b.Sprites[index]
+		return b.Sprites[index]
 	}
-	return result
+	return nil
 }
 
 func (b BlockGenerator) newId() int {
@@ -121,7 +120,7 @@ func (b BlockGenerator) newId() int {
 	return idCounter
 }
 
-func (b *BlockGenerator) mustLoadImage(name string) ebiten.Image {
+func (b *BlockGenerator) mustLoadImage(name string) *ebiten.Image {
 	f, err := assets.Open(name)
 	if err != nil {
 		panic(err)
@@ -133,5 +132,5 @@ func (b *BlockGenerator) mustLoadImage(name string) ebiten.Image {
 		panic(err)
 	}
 
-	return *ebiten.NewImageFromImage(img)
+	return ebiten.NewImageFromImage(img)
 }

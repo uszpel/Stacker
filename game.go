@@ -45,6 +45,7 @@ type Game struct {
 	Level        int
 	Menu         *ebiten.Image
 	HighScore    *HighScore
+	Sound        SoundGenerator
 }
 
 type BoardEntry struct {
@@ -111,6 +112,7 @@ func (g *Game) moveDown(block *Block) {
 		if g.checkBoard(*block, 0, 0, true) {
 			g.updateBoard(block, 0, 0)
 			block.Rotate()
+			//g.Sound.PlaySound()
 			g.updateBoard(block, block.Id, block.Sprite)
 		}
 		g.Direction = dirNone
@@ -248,6 +250,7 @@ func (g *Game) calcDistanceFromGround(block Block) int {
 
 func (g *Game) InitGame() {
 	g.CycleCounter = 0
+	g.Sound.Init()
 	g.Generator.Init()
 	g.mustLoadFont("assets/fonts/arial_bold.ttf")
 	g.HighScore, _ = ReadHighscore(datafile)
@@ -405,7 +408,7 @@ func (g *Game) drawBoard(screen *ebiten.Image) {
 				sprite := g.Generator.GetSprite(e.Sprite)
 				op := &ebiten.DrawImageOptions{}
 				op.GeoM.Translate(15+float64(iy*sprite.Bounds().Dy()), 15+float64(ix*sprite.Bounds().Dx()))
-				screen.DrawImage(&sprite, op)
+				screen.DrawImage(sprite, op)
 			}
 		}
 	}
@@ -433,7 +436,7 @@ func (g *Game) drawMenu(screen *ebiten.Image) {
 				if rand.IntN(1000)%2 == 0 && (ix < 7 || ix > 13) && !(ix > 23) {
 					op := &ebiten.DrawImageOptions{}
 					op.GeoM.Translate(15+float64(iy*sprite.Bounds().Dy()), 15+float64(ix*sprite.Bounds().Dx()))
-					g.Menu.DrawImage(&sprite, op)
+					g.Menu.DrawImage(sprite, op)
 				}
 			}
 		}
