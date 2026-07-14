@@ -46,6 +46,7 @@ type Game struct {
 	Menu         *ebiten.Image
 	HighScore    *HighScore
 	Sound        SoundGenerator
+	SoundQueue   []int
 }
 
 type BoardEntry struct {
@@ -112,7 +113,7 @@ func (g *Game) moveDown(block *Block) {
 		if g.checkBoard(*block, 0, 0, true) {
 			g.updateBoard(block, 0, 0)
 			block.Rotate()
-			//g.Sound.PlaySound()
+			g.SoundQueue = append(g.SoundQueue, 1)
 			g.updateBoard(block, block.Id, block.Sprite)
 		}
 		g.Direction = dirNone
@@ -251,6 +252,7 @@ func (g *Game) calcDistanceFromGround(block Block) int {
 func (g *Game) InitGame() {
 	g.CycleCounter = 0
 	g.Sound.Init()
+	g.SoundQueue = make([]int, 0)
 	g.Generator.Init()
 	g.mustLoadFont("assets/fonts/arial_bold.ttf")
 	g.HighScore, _ = ReadHighscore(datafile)
@@ -384,6 +386,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.drawHighscores(screen)
 	default:
 		g.drawBoard(screen)
+	}
+	g.processSoundQueue()
+}
+
+func (g *Game) processSoundQueue() {
+	for len(g.SoundQueue) > 0 {
+		g.Sound.PlaySound()
+		g.SoundQueue = g.SoundQueue[1:]
 	}
 }
 
