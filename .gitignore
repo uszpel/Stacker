@@ -7,3 +7,4 @@ highscores.data
 
 # GoLand directory
 .idea/
+.DS_Store*

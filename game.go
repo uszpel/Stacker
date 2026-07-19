@@ -62,6 +62,7 @@ func (g *Game) Update() error {
 			if len(completeLines) > 0 {
 				//log.Printf("Complete lines: %v", completeLines)
 				g.removeCompleteLines(completeLines)
+				g.SoundQueue = append(g.SoundQueue, soundLineComplete)
 				g.Lines = g.Lines + len(completeLines)
 				if g.Lines >= g.Level*10 {
 					g.Level++
@@ -92,6 +93,7 @@ func (g *Game) Update() error {
 		if g.CycleCounter%20 == 0 {
 			g.moveSideways(g.Block)
 			if g.CycleCounter >= (60 / g.Level) {
+				g.Sound.UpdateState()
 				if g.checkState() {
 					g.moveDown(g.Block)
 				}
@@ -113,7 +115,7 @@ func (g *Game) moveDown(block *Block) {
 		if g.checkBoard(*block, 0, 0, true) {
 			g.updateBoard(block, 0, 0)
 			block.Rotate()
-			g.SoundQueue = append(g.SoundQueue, 1)
+			g.SoundQueue = append(g.SoundQueue, soundRotate)
 			g.updateBoard(block, block.Id, block.Sprite)
 		}
 		g.Direction = dirNone
@@ -127,6 +129,7 @@ func (g *Game) moveDown(block *Block) {
 		}
 		if g.Direction == dirDown && g.checkBoard(*block, 0, distanceFromGround, false) {
 			block.Move(0, distanceFromGround)
+			g.SoundQueue = append(g.SoundQueue, soundDrop)
 		} else {
 			block.Move(0, 1)
 		}
@@ -167,6 +170,9 @@ func (g *Game) checkState() bool {
 }
 
 func (g *Game) checkKeyboardInput() {
+	if ebiten.IsKeyPressed(ebiten.KeyM) {
+		g.Sound.RequestStateChange()
+	}
 	switch g.State {
 	case stateReady:
 		if ebiten.IsKeyPressed(ebiten.KeyS) {
@@ -392,7 +398,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 func (g *Game) processSoundQueue() {
 	for len(g.SoundQueue) > 0 {
-		g.Sound.PlaySound()
+		g.Sound.PlaySound(g.SoundQueue[0])
 		g.SoundQueue = g.SoundQueue[1:]
 	}
 }
