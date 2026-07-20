@@ -30,6 +30,7 @@ const (
 )
 
 const datafile = "highscores.data"
+const configfile = "stacker.config"
 
 type Game struct {
 	CycleCounter int
@@ -47,6 +48,7 @@ type Game struct {
 	HighScore    *HighScore
 	Sound        SoundGenerator
 	SoundQueue   []int
+	Config       *Config
 }
 
 type BoardEntry struct {
@@ -257,7 +259,8 @@ func (g *Game) calcDistanceFromGround(block Block) int {
 
 func (g *Game) InitGame() {
 	g.CycleCounter = 0
-	g.Sound.Init()
+	g.Config, _ = ReadConfig(configfile)
+	g.Sound.Init(g.Config)
 	g.SoundQueue = make([]int, 0)
 	g.Generator.Init()
 	g.mustLoadFont("assets/fonts/arial_bold.ttf")

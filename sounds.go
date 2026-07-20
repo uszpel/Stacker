@@ -29,16 +29,26 @@ type SoundGenerator struct {
 	audioContext *audio.Context
 	audioPlayer  *audio.Player
 	sounds       [][]byte
+	volume       float64
 	state        int
 }
 
-func (s *SoundGenerator) Init() {
+func (s *SoundGenerator) Init(config *Config) {
 	s.audioContext = audio.NewContext(sampleRate)
 	s.sounds = make([][]byte, 3)
 	s.sounds[soundRotate] = mustLoadSound("assets/sounds/rotate.ogg")
 	s.sounds[soundDrop] = mustLoadSound("assets/sounds/drop.ogg")
 	s.sounds[soundLineComplete] = mustLoadSound("assets/sounds/line_complete.ogg")
 	s.state = soundStateUnmuted
+	s.volume = 0.1
+	if config != nil {
+		if config.StartAsMuted {
+			s.state = soundStateMuted
+		} else {
+			s.state = soundStateUnmuted
+		}
+		s.volume = config.SoundVolume
+	}
 }
 
 func (s *SoundGenerator) RequestStateChange() {
@@ -67,7 +77,7 @@ func (s *SoundGenerator) PlaySound(sound int) {
 		return
 	}
 	s.audioPlayer, _ = s.audioContext.NewPlayer(bytes.NewReader(s.sounds[sound]))
-	s.audioPlayer.SetVolume(0.1)
+	s.audioPlayer.SetVolume(s.volume)
 	s.audioPlayer.Play()
 }
 

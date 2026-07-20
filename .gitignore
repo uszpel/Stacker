@@ -1,6 +1,6 @@
 # Ignore binaries
 stacker
-stacker.*
+stacker.exe
 
 # Ignore game state
 highscores.data
