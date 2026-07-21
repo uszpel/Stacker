@@ -29,7 +29,7 @@ const (
 	stateExitRequested
 )
 
-const datafile = "highscores.data"
+const datafile = "stacker.highscores"
 const configfile = "stacker.config"
 
 type Game struct {
