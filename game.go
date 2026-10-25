@@ -92,7 +92,11 @@ func (g *Game) Update() error {
 			//log.Print(g.printBoard())
 		}
 
-		if g.CycleCounter%20 == 0 {
+		frameSelector := int(20 / g.Level)
+		if frameSelector == 0 {
+			frameSelector = 1
+		}
+		if g.CycleCounter%frameSelector == 0 {
 			g.moveSideways(g.Block)
 			if g.CycleCounter >= (60 / g.Level) {
 				g.Sound.UpdateState()
